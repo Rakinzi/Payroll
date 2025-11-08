@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\OrganizationalDataController;
 use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CompanyBankDetailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
@@ -255,6 +256,34 @@ Route::middleware([
 
             // Reset admin password
             Route::post('/{admin}/reset-password', [AdminController::class, 'resetPassword'])->name('reset-password');
+        });
+
+        // Company Bank Details Management Routes
+        Route::prefix('company-bank-details')->name('company-bank-details.')->group(function () {
+            // List bank details (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [CompanyBankDetailController::class, 'index'])->name('index');
+            });
+
+            // Create bank detail (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::post('/', [CompanyBankDetailController::class, 'store'])->name('store');
+            });
+
+            // Update bank detail (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::put('/{companyBankDetail}', [CompanyBankDetailController::class, 'update'])->name('update');
+            });
+
+            // Delete bank detail (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::delete('/{companyBankDetail}', [CompanyBankDetailController::class, 'destroy'])->name('destroy');
+            });
+
+            // Set default bank account (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::post('/{companyBankDetail}/set-default', [CompanyBankDetailController::class, 'setDefault'])->name('set-default');
+            });
         });
 
         // Payroll Routes (with permission middleware)
