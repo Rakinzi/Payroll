@@ -19,6 +19,8 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\SpreadsheetImportController;
 use App\Http\Controllers\LeaveApplicationController;
+use App\Http\Controllers\LeaveBalanceController;
+use App\Http\Controllers\LeaveReportController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\TaxBandController;
@@ -516,6 +518,32 @@ Route::middleware([
             Route::get('/', function () {
                 return Inertia::render('reports/index');
             })->name('reports.index');
+        });
+
+        // Leave Management Routes
+        Route::prefix('leave')->name('leave.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // Leave Applications
+                Route::get('/applications', [LeaveApplicationController::class, 'index'])->name('applications.index');
+                Route::get('/applications/create', [LeaveApplicationController::class, 'create'])->name('applications.create');
+                Route::post('/applications', [LeaveApplicationController::class, 'store'])->name('applications.store');
+                Route::get('/applications/{leave}/edit', [LeaveApplicationController::class, 'edit'])->name('applications.edit');
+                Route::put('/applications/{leave}', [LeaveApplicationController::class, 'update'])->name('applications.update');
+                Route::delete('/applications/{leave}', [LeaveApplicationController::class, 'destroy'])->name('applications.destroy');
+                Route::post('/applications/{leave}/approve', [LeaveApplicationController::class, 'approve'])->name('applications.approve');
+                Route::post('/applications/{leave}/reject', [LeaveApplicationController::class, 'reject'])->name('applications.reject');
+
+                // Leave Balances
+                Route::get('/balances', [LeaveBalanceController::class, 'index'])->name('balances.index');
+                Route::put('/balances/{balance}', [LeaveBalanceController::class, 'update'])->name('balances.update');
+
+                // Leave Reports
+                Route::get('/reports', [LeaveReportController::class, 'index'])->name('reports.index');
+                Route::get('/reports/period-summary', [LeaveReportController::class, 'periodSummary'])->name('reports.period-summary');
+                Route::get('/reports/balances', [LeaveReportController::class, 'balances'])->name('reports.balances');
+                Route::get('/reports/warnings', [LeaveReportController::class, 'warnings'])->name('reports.warnings');
+                Route::get('/reports/annual-statement', [LeaveReportController::class, 'annualStatement'])->name('reports.annual-statement');
+            });
         });
 
         // Organizational Data Routes (admin only)
