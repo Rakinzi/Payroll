@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\OrganizationalDataController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeBankDetailController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Middleware\CheckCostCenter;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -75,17 +77,44 @@ Route::middleware([
             Route::delete('/company-bank-details/{id}', [OrganizationalDataController::class, 'destroyCompanyBankDetail']);
         });
 
-        // Employee Management Routes (with permission middleware)
-        Route::middleware('permission:view employees')->group(function () {
-            Route::get('/employees', function () {
-                return Inertia::render('employees/index');
-            })->name('employees.index');
-        });
+        // Employee Management Routes
+        Route::prefix('employees')->name('employees.')->group(function () {
+            // List and view employees
+            Route::middleware('permission:view employees')->group(function () {
+                Route::get('/', [EmployeeController::class, 'index'])->name('index');
+                Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
+            });
 
-        Route::middleware('permission:create employees')->group(function () {
-            Route::get('/employees/create', function () {
-                return Inertia::render('employees/create');
-            })->name('employees.create');
+            // Create employees
+            Route::middleware('permission:create employees')->group(function () {
+                Route::get('/create', [EmployeeController::class, 'create'])->name('create');
+                Route::post('/', [EmployeeController::class, 'store'])->name('store');
+            });
+
+            // Edit employees
+            Route::middleware('permission:edit employees')->group(function () {
+                Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->name('edit');
+                Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update');
+            });
+
+            // Delete employees
+            Route::middleware('permission:delete employees')->group(function () {
+                Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
+            });
+
+            // Terminate and restore employees
+            Route::middleware('permission:edit employees')->group(function () {
+                Route::post('/{employee}/terminate', [EmployeeController::class, 'terminate'])->name('terminate');
+                Route::post('/{employee}/restore', [EmployeeController::class, 'restore'])->name('restore');
+            });
+
+            // Banking details routes
+            Route::middleware('permission:view employees')->prefix('{employee}/bank-details')->name('bank-details.')->group(function () {
+                Route::get('/', [EmployeeBankDetailController::class, 'index'])->name('index');
+                Route::post('/', [EmployeeBankDetailController::class, 'store'])->name('store');
+                Route::put('/{bankDetail}', [EmployeeBankDetailController::class, 'update'])->name('update');
+                Route::delete('/{bankDetail}', [EmployeeBankDetailController::class, 'destroy'])->name('destroy');
+            });
         });
 
         // Payroll Routes (with permission middleware)

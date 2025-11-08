@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -20,22 +21,64 @@ class Employee extends Model
      */
     protected $fillable = [
         'emp_system_id',
+        // Personal Information
+        'title',
         'firstname',
         'surname',
         'othername',
-        'emp_email',
-        'phone',
-        'date_of_birth',
+        'nationality',
+        'nat_id',
+        'nassa_number',
         'gender',
-        'address',
+        'date_of_birth',
+        'marital_status',
+        // Contact Information
+        'home_address',
+        'city',
+        'country',
+        'phone',
+        'emp_email',
+        'personal_email_address',
+        // Identification
+        'passport',
+        'driver_license',
+        // Employment Information
+        'hire_date',
+        'department_id',
+        'position_id',
+        'occupation_id',
+        'paypoint_id',
         'center_id',
+        'average_working_days',
+        'working_hours',
+        'payment_basis',
+        'payment_method',
+        // Compensation & Benefits
+        'basic_salary',
+        'basic_salary_usd',
+        'leave_entitlement',
+        'leave_accrual',
+        // Tax Configuration
+        'tax_directives',
+        'disability_status',
+        'dependents',
+        'vehicle_engine_capacity',
+        // Currency Splitting
+        'zwl_percentage',
+        'usd_percentage',
+        // NEC Integration
+        'nec_grade_id',
+        // Role & Access
+        'emp_role',
+        // Status & Lifecycle
         'is_active',
         'is_ex',
         'is_ex_on',
-        'hire_date',
-        'department',
-        'position',
-        'base_salary',
+        'employment_status',
+        'discharge_notes',
+        // Audit
+        'last_login_time',
+        'last_login_ip',
     ];
 
     /**
@@ -70,10 +113,21 @@ class Employee extends Model
         return [
             'is_active' => 'boolean',
             'is_ex' => 'boolean',
+            'disability_status' => 'boolean',
             'is_ex_on' => 'date',
             'date_of_birth' => 'date',
             'hire_date' => 'date',
-            'base_salary' => 'decimal:2',
+            'last_login_time' => 'datetime',
+            'basic_salary' => 'decimal:2',
+            'basic_salary_usd' => 'decimal:2',
+            'leave_entitlement' => 'decimal:2',
+            'leave_accrual' => 'decimal:2',
+            'zwl_percentage' => 'decimal:2',
+            'usd_percentage' => 'decimal:2',
+            'working_hours' => 'decimal:2',
+            'dependents' => 'integer',
+            'average_working_days' => 'integer',
+            'vehicle_engine_capacity' => 'integer',
         ];
     }
 
@@ -83,6 +137,63 @@ class Employee extends Model
     public function costCenter(): BelongsTo
     {
         return $this->belongsTo(CostCenter::class, 'center_id');
+    }
+
+    /**
+     * Get the department that the employee belongs to.
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    /**
+     * Get the position of the employee.
+     */
+    public function position(): BelongsTo
+    {
+        return $this->belongsTo(Position::class, 'position_id');
+    }
+
+    /**
+     * Get the occupation of the employee.
+     */
+    public function occupation(): BelongsTo
+    {
+        return $this->belongsTo(Occupation::class, 'occupation_id');
+    }
+
+    /**
+     * Get the paypoint of the employee.
+     */
+    public function paypoint(): BelongsTo
+    {
+        return $this->belongsTo(Paypoint::class, 'paypoint_id');
+    }
+
+    /**
+     * Get the NEC grade of the employee.
+     */
+    public function necGrade(): BelongsTo
+    {
+        return $this->belongsTo(NECGrade::class, 'nec_grade_id');
+    }
+
+    /**
+     * Get the bank details for the employee.
+     */
+    public function bankDetails()
+    {
+        return $this->hasMany(EmployeeBankDetail::class, 'employee_id');
+    }
+
+    /**
+     * Get the default bank account for the employee.
+     */
+    public function defaultBankAccount()
+    {
+        return $this->hasOne(EmployeeBankDetail::class, 'employee_id')
+                    ->where('is_default', true);
     }
 
     /**
