@@ -208,6 +208,24 @@ class Employee extends Model
     }
 
     /**
+     * Get the payroll assignments for the employee.
+     */
+    public function payrollAssignments()
+    {
+        return $this->hasMany(PayrollEmployee::class, 'employee_id');
+    }
+
+    /**
+     * Get the active payroll assignment for the employee.
+     */
+    public function activePayroll()
+    {
+        return $this->hasOne(PayrollEmployee::class, 'employee_id')
+                    ->where('is_active', true)
+                    ->with('payroll');
+    }
+
+    /**
      * Scope query to only active employees.
      */
     public function scopeActive($query)

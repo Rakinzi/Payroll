@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
@@ -362,13 +363,32 @@ Route::middleware([
             });
         });
 
-        // Payroll Routes (with permission middleware)
-        Route::middleware('permission:view payroll')->prefix('payroll')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('payroll/index');
-            })->name('payroll.index');
+        // Payroll Management Routes (Admin only)
+        Route::prefix('payrolls')->name('payrolls.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // List and view payrolls
+                Route::get('/', [PayrollController::class, 'index'])->name('index');
+                Route::get('/{payroll}', [PayrollController::class, 'show'])->name('show');
+
+                // Create payroll
+                Route::post('/', [PayrollController::class, 'store'])->name('store');
+
+                // Update payroll
+                Route::put('/{payroll}', [PayrollController::class, 'update'])->name('update');
+
+                // Delete payroll
+                Route::delete('/{payroll}', [PayrollController::class, 'destroy'])->name('destroy');
+
+                // Toggle payroll status
+                Route::post('/{payroll}/toggle-status', [PayrollController::class, 'toggleStatus'])->name('toggle-status');
+
+                // Employee assignment
+                Route::post('/{payroll}/assign-employees', [PayrollController::class, 'assignEmployees'])->name('assign-employees');
+                Route::delete('/{payroll}/employees/{employee}', [PayrollController::class, 'removeEmployee'])->name('remove-employee');
+            });
         });
 
+        // Payroll Processing Routes (with permission middleware)
         Route::middleware('permission:process payroll')->group(function () {
             Route::get('/payroll/run', function () {
                 return Inertia::render('payroll/run');
