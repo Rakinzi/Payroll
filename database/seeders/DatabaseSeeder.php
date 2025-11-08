@@ -13,15 +13,51 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Check if we're in tenant context
+        if (tenancy()->initialized) {
+            // Seeding tenant database
+            $this->seedTenantDatabase();
+        } else {
+            // Seeding central database
+            $this->seedCentralDatabase();
+        }
+    }
 
+    /**
+     * Seed the central database.
+     */
+    private function seedCentralDatabase(): void
+    {
+        $this->command->info('Seeding central database...');
+
+        // Seed tenant records
+        $this->call(TenantSeeder::class);
+
+        $this->command->info('Central database seeded!');
+    }
+
+    /**
+     * Seed tenant database.
+     */
+    private function seedTenantDatabase(): void
+    {
+        $this->command->info('Seeding tenant database: ' . tenant('id'));
+
+        // Seed permissions and roles for this tenant
+        $this->call(PermissionSeeder::class);
+
+        // Create default test user for each tenant
         User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'admin@example.com'],
             [
-                'name' => 'Test User',
+                'name' => 'Admin User',
                 'password' => 'password',
                 'email_verified_at' => now(),
+                'center_id' => null, // Super admin
+                'is_active' => true,
             ]
         );
+
+        $this->command->info('Tenant database seeded!');
     }
 }
