@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
@@ -11,16 +12,23 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
 
+interface CostCenter {
+    id: string;
+    center_name: string;
+}
+
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    costCenters: CostCenter[];
 }
 
 export default function Login({
     status,
     canResetPassword,
     canRegister,
+    costCenters = [],
 }: LoginProps) {
     return (
         <AuthLayout
@@ -34,7 +42,7 @@ export default function Login({
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >
-                {({ processing, errors }) => (
+                {({ processing, errors, data, setData }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
@@ -76,6 +84,33 @@ export default function Login({
                                 />
                                 <InputError message={errors.password} />
                             </div>
+
+                            {costCenters && costCenters.length > 0 && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="center_id">Cost Center</Label>
+                                    <Select
+                                        name="center_id"
+                                        value={data.center_id || ''}
+                                        onValueChange={(value) => setData('center_id', value)}
+                                    >
+                                        <SelectTrigger id="center_id">
+                                            <SelectValue placeholder="Select a cost center (or leave empty for super admin)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">Super Admin Login</SelectItem>
+                                            {costCenters.map((center) => (
+                                                <SelectItem key={center.id} value={center.id}>
+                                                    {center.center_name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.center_id} />
+                                    <p className="text-xs text-muted-foreground">
+                                        Leave empty to log in as super admin
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="flex items-center space-x-3">
                                 <Checkbox
