@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\CostAnalysisCache;
+use App\Models\EmployeeRequisition;
 use App\Models\ItfForm;
 use App\Models\Payroll;
+use App\Models\RetirementWarning;
 use App\Models\ScheduledReport;
+use App\Models\TaxableAccumulative;
+use App\Models\TaxCellAccumulative;
 use App\Models\ThirdPartyReport;
 use App\Models\VarianceAnalysis;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -407,5 +411,267 @@ class ReportsController extends Controller
         $schedule->delete();
 
         return back()->with('success', 'Scheduled report deleted successfully');
+    }
+
+    /**
+     * Generate taxable accumulatives report.
+     */
+    public function generateTaxableAccumulatives(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'tax_year' => 'required|integer|min:2020|max:2100',
+            'currency' => 'required|in:ZWG,USD',
+        ]);
+
+        try {
+            // Create the accumulative report
+            $accumulative = TaxableAccumulative::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'tax_year' => $validated['tax_year'],
+                'currency' => $validated['currency'],
+                'total_taxable_income' => 0,
+                'total_tax_paid' => 0,
+                'total_outstanding_tax' => 0,
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated taxable accumulatives report for {$validated['tax_year']}",
+                'model_type' => 'TaxableAccumulative',
+                'model_id' => $accumulative->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'accumulative_id' => $accumulative->id,
+                'download_url' => route('reports.taxable-accumulatives.download', $accumulative->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download taxable accumulatives report as PDF.
+     */
+    public function downloadTaxableAccumulatives(TaxableAccumulative $accumulative)
+    {
+        if (!$accumulative->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.taxable-accumulatives', [
+            'accumulative' => $accumulative,
+            'payroll' => $accumulative->payroll,
+            'details' => $accumulative->details()->orderByTaxableIncome()->get(),
+        ])
+        ->setPaper('a4', 'portrait');
+
+        return $pdf->download("taxable_accumulatives_{$accumulative->tax_year}_{$accumulative->currency}.pdf");
+    }
+
+    /**
+     * Generate tax cell accumulatives report.
+     */
+    public function generateTaxCellAccumulatives(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'tax_year' => 'required|integer|min:2020|max:2100',
+            'currency' => 'required|in:ZWG,USD',
+        ]);
+
+        try {
+            // Create the tax cell accumulative report
+            $cellAccumulative = TaxCellAccumulative::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'tax_year' => $validated['tax_year'],
+                'currency' => $validated['currency'],
+                'tax_bracket_summary' => [], // Would be calculated from actual data
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated tax cell accumulatives report for {$validated['tax_year']}",
+                'model_type' => 'TaxCellAccumulative',
+                'model_id' => $cellAccumulative->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'cell_accumulative_id' => $cellAccumulative->id,
+                'download_url' => route('reports.tax-cell-accumulatives.download', $cellAccumulative->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download tax cell accumulatives report as PDF.
+     */
+    public function downloadTaxCellAccumulatives(TaxCellAccumulative $cellAccumulative)
+    {
+        if (!$cellAccumulative->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.tax-cell-accumulatives', [
+            'cellAccumulative' => $cellAccumulative,
+            'payroll' => $cellAccumulative->payroll,
+            'details' => $cellAccumulative->details()->orderByRate()->get(),
+        ])
+        ->setPaper('a4', 'landscape');
+
+        return $pdf->download("tax_cell_accumulatives_{$cellAccumulative->tax_year}_{$cellAccumulative->currency}.pdf");
+    }
+
+    /**
+     * Generate retirement warning report.
+     */
+    public function generateRetirementWarning(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'warning_threshold_months' => 'required|integer|min:1|max:60',
+        ]);
+
+        try {
+            // Create the retirement warning report
+            $warning = RetirementWarning::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'warning_threshold_months' => $validated['warning_threshold_months'],
+                'total_warnings' => 0,
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated retirement warning report ({$validated['warning_threshold_months']} months threshold)",
+                'model_type' => 'RetirementWarning',
+                'model_id' => $warning->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'warning_id' => $warning->id,
+                'download_url' => route('reports.retirement-warning.download', $warning->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download retirement warning report as PDF.
+     */
+    public function downloadRetirementWarning(RetirementWarning $warning)
+    {
+        if (!$warning->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.retirement-warning', [
+            'warning' => $warning,
+            'payroll' => $warning->payroll,
+            'details' => $warning->details()->orderByUrgency()->get(),
+        ])
+        ->setPaper('a4', 'landscape');
+
+        return $pdf->download("retirement_warning_{$warning->id}.pdf");
+    }
+
+    /**
+     * Generate employee requisition report.
+     */
+    public function generateEmployeeRequisition(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'period_start' => 'required|date',
+            'period_end' => 'required|date|after_or_equal:period_start',
+        ]);
+
+        try {
+            // Create the employee requisition report
+            $requisition = EmployeeRequisition::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'period_start' => $validated['period_start'],
+                'period_end' => $validated['period_end'],
+                'total_active_employees' => 0,
+                'total_terminated' => 0,
+                'total_hired' => 0,
+                'turnover_rate' => 0,
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated employee requisition report for {$requisition->period_display}",
+                'model_type' => 'EmployeeRequisition',
+                'model_id' => $requisition->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'requisition_id' => $requisition->id,
+                'download_url' => route('reports.employee-requisition.download', $requisition->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download employee requisition report as PDF.
+     */
+    public function downloadEmployeeRequisition(EmployeeRequisition $requisition)
+    {
+        if (!$requisition->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.employee-requisition', [
+            'requisition' => $requisition,
+            'payroll' => $requisition->payroll,
+        ])
+        ->setPaper('a4', 'portrait');
+
+        return $pdf->download("employee_requisition_{$requisition->id}.pdf");
     }
 }

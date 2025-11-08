@@ -51,6 +51,29 @@ export interface ScheduledReportFormData {
     parameters?: Record<string, any>;
 }
 
+export interface TaxableAccumulativeFormData {
+    payroll_id: string;
+    tax_year: number;
+    currency: 'ZWG' | 'USD';
+}
+
+export interface TaxCellAccumulativeFormData {
+    payroll_id: string;
+    tax_year: number;
+    currency: 'ZWG' | 'USD';
+}
+
+export interface RetirementWarningFormData {
+    payroll_id: string;
+    warning_threshold_months: number;
+}
+
+export interface EmployeeRequisitionFormData {
+    payroll_id: string;
+    period_start: string;
+    period_end: string;
+}
+
 // Query Keys
 export const reportKeys = {
     all: ['reports'] as const,
@@ -224,6 +247,114 @@ export function useDeleteScheduledReport() {
                     onError: (errors) => reject(errors),
                 });
             });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: reportKeys.all });
+        },
+    });
+}
+
+// Generate Taxable Accumulatives
+export function useGenerateTaxableAccumulatives() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: TaxableAccumulativeFormData) => {
+            const response = await fetch('/reports/taxable-accumulatives/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate taxable accumulatives report');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: reportKeys.all });
+        },
+    });
+}
+
+// Generate Tax Cell Accumulatives
+export function useGenerateTaxCellAccumulatives() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: TaxCellAccumulativeFormData) => {
+            const response = await fetch('/reports/tax-cell-accumulatives/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate tax cell accumulatives report');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: reportKeys.all });
+        },
+    });
+}
+
+// Generate Retirement Warning
+export function useGenerateRetirementWarning() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: RetirementWarningFormData) => {
+            const response = await fetch('/reports/retirement-warning/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate retirement warning report');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: reportKeys.all });
+        },
+    });
+}
+
+// Generate Employee Requisition
+export function useGenerateEmployeeRequisition() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: EmployeeRequisitionFormData) => {
+            const response = await fetch('/reports/employee-requisition/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate employee requisition report');
+            }
+
+            return response.json();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: reportKeys.all });

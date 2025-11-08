@@ -485,6 +485,22 @@ Route::middleware([
                 // Scheduled Reports
                 Route::post('/scheduled/create', [ReportsController::class, 'createScheduledReport'])->name('scheduled.create');
                 Route::delete('/scheduled/{schedule}', [ReportsController::class, 'deleteScheduledReport'])->name('scheduled.delete');
+
+                // Taxable Accumulatives
+                Route::post('/taxable-accumulatives/generate', [ReportsController::class, 'generateTaxableAccumulatives'])->name('taxable-accumulatives.generate');
+                Route::get('/taxable-accumulatives/{accumulative}/download', [ReportsController::class, 'downloadTaxableAccumulatives'])->name('taxable-accumulatives.download');
+
+                // Tax Cell Accumulatives
+                Route::post('/tax-cell-accumulatives/generate', [ReportsController::class, 'generateTaxCellAccumulatives'])->name('tax-cell-accumulatives.generate');
+                Route::get('/tax-cell-accumulatives/{cellAccumulative}/download', [ReportsController::class, 'downloadTaxCellAccumulatives'])->name('tax-cell-accumulatives.download');
+
+                // Retirement Warning
+                Route::post('/retirement-warning/generate', [ReportsController::class, 'generateRetirementWarning'])->name('retirement-warning.generate');
+                Route::get('/retirement-warning/{warning}/download', [ReportsController::class, 'downloadRetirementWarning'])->name('retirement-warning.download');
+
+                // Employee Requisition
+                Route::post('/employee-requisition/generate', [ReportsController::class, 'generateEmployeeRequisition'])->name('employee-requisition.generate');
+                Route::get('/employee-requisition/{requisition}/download', [ReportsController::class, 'downloadEmployeeRequisition'])->name('employee-requisition.download');
             });
         });
 
