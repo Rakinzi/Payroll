@@ -19,6 +19,7 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\SpreadsheetImportController;
 use App\Http\Controllers\LeaveApplicationController;
+use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
@@ -429,6 +430,32 @@ Route::middleware([
             Route::get('/{leaveApplication}', [LeaveApplicationController::class, 'show'])->name('show');
             Route::put('/{leaveApplication}', [LeaveApplicationController::class, 'update'])->name('update');
             Route::delete('/{leaveApplication}', [LeaveApplicationController::class, 'destroy'])->name('destroy');
+        });
+
+        // Payslip Management Routes (Admin only)
+        Route::prefix('payslips')->name('payslips.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // List and view payslips
+                Route::get('/', [PayslipController::class, 'index'])->name('index');
+                Route::get('/create', [PayslipController::class, 'create'])->name('create');
+                Route::post('/', [PayslipController::class, 'store'])->name('store');
+                Route::get('/{payslip}', [PayslipController::class, 'show'])->name('show');
+
+                // Transaction management
+                Route::post('/{payslip}/transactions', [PayslipController::class, 'addTransaction'])->name('transactions.add');
+                Route::delete('/{payslip}/transactions/{transaction}', [PayslipController::class, 'removeTransaction'])->name('transactions.remove');
+
+                // Payslip actions
+                Route::post('/{payslip}/finalize', [PayslipController::class, 'finalize'])->name('finalize');
+                Route::post('/{payslip}/distribute', [PayslipController::class, 'distribute'])->name('distribute');
+
+                // PDF operations
+                Route::get('/{payslip}/preview', [PayslipController::class, 'preview'])->name('preview');
+                Route::get('/{payslip}/download', [PayslipController::class, 'download'])->name('download');
+
+                // Delete payslip
+                Route::delete('/{payslip}', [PayslipController::class, 'destroy'])->name('destroy');
+            });
         });
 
         // Payroll Processing Routes (with permission middleware)
