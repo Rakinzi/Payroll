@@ -295,6 +295,7 @@ class EmployeeController extends Controller
 
         $employee->update([
             'is_ex' => true,
+            'is_ex_by' => auth()->user()->name,
             'is_ex_on' => $validated['is_ex_on'],
             'employment_status' => $validated['employment_status'],
             'discharge_notes' => $validated['discharge_notes'] ?? null,
@@ -312,9 +313,11 @@ class EmployeeController extends Controller
     {
         $employee->update([
             'is_ex' => false,
+            'is_ex_by' => null,
             'is_ex_on' => null,
             'employment_status' => 'active',
             'discharge_notes' => null,
+            'reinstated_date' => now(),
             'is_active' => true,
         ]);
 

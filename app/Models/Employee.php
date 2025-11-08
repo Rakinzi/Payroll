@@ -74,8 +74,10 @@ class Employee extends Model
         'is_active',
         'is_ex',
         'is_ex_on',
+        'is_ex_by',
         'employment_status',
         'discharge_notes',
+        'reinstated_date',
         // Audit
         'last_login_time',
         'last_login_ip',
@@ -115,6 +117,7 @@ class Employee extends Model
             'is_ex' => 'boolean',
             'disability_status' => 'boolean',
             'is_ex_on' => 'date',
+            'reinstated_date' => 'date',
             'date_of_birth' => 'date',
             'hire_date' => 'date',
             'last_login_time' => 'datetime',
@@ -227,6 +230,23 @@ class Employee extends Model
     }
 
     /**
+     * Scope query to only discharged employees (alias for exEmployees).
+     */
+    public function scopeDischarged($query)
+    {
+        return $query->where('is_ex', true);
+    }
+
+    /**
+     * Scope query to discharged employees between dates.
+     */
+    public function scopeDischargedBetween($query, $startDate, $endDate)
+    {
+        return $query->where('is_ex', true)
+            ->whereBetween('is_ex_on', [$startDate, $endDate]);
+    }
+
+    /**
      * Scope query to employees in a specific cost center.
      */
     public function scopeInCenter($query, string $centerId)
@@ -267,6 +287,30 @@ class Employee extends Model
     }
 
     /**
+     * Check if employee is discharged.
+     */
+    public function getIsDischargedAttribute(): bool
+    {
+        return $this->is_ex == 1;
+    }
+
+    /**
+     * Get the discharge reason.
+     */
+    public function getDischargeReasonAttribute(): ?string
+    {
+        return $this->is_ex ? $this->employment_status : null;
+    }
+
+    /**
+     * Get days since discharge.
+     */
+    public function getDaysSinceDischargeAttribute(): ?int
+    {
+        return $this->is_ex_on ? now()->diffInDays($this->is_ex_on) : null;
+    }
+
+    /**
      * Generate a unique employee ID.
      * Format: EMP-YYYY-NNNN (e.g., EMP-2025-0001)
      */
@@ -291,5 +335,19 @@ class Employee extends Model
 
         // Pad with zeros to make it 4 digits
         return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get available discharge reasons.
+     */
+    public static function getDischargeReasons(): array
+    {
+        return [
+            'END CONTRACT',
+            'RESIGNED',
+            'DISMISSED',
+            'DECEASED',
+            'SUSPENDED'
+        ];
     }
 }

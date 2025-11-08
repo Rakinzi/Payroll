@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TaxCreditController;
@@ -188,6 +189,25 @@ Route::middleware([
             // Delete tax credits (admin only)
             Route::middleware('permission:access all centers')->group(function () {
                 Route::delete('/{taxCredit}', [TaxCreditController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        // Discharged Employees Management Routes
+        Route::prefix('discharged-employees')->name('discharged-employees.')->group(function () {
+            // List discharged employees
+            Route::middleware('permission:view employees')->group(function () {
+                Route::get('/', [DischargedEmployeesController::class, 'index'])->name('index');
+                Route::get('/{dischargedEmployee}', [DischargedEmployeesController::class, 'show'])->name('show');
+            });
+
+            // Reinstate employee
+            Route::middleware('permission:edit employees')->group(function () {
+                Route::post('/{dischargedEmployee}/reinstate', [DischargedEmployeesController::class, 'reinstate'])->name('reinstate');
+            });
+
+            // Permanently delete (admin only)
+            Route::middleware('permission:delete employees')->group(function () {
+                Route::delete('/{dischargedEmployee}', [DischargedEmployeesController::class, 'destroy'])->name('destroy');
             });
         });
 
