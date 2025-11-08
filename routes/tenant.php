@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CompanyBankDetailController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CurrencySetupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
@@ -322,6 +323,21 @@ Route::middleware([
                 // API endpoints for currency conversion
                 Route::get('/current-rate', [CurrencySetupController::class, 'getCurrentRate'])->name('current-rate');
                 Route::post('/convert', [CurrencySetupController::class, 'convertCurrency'])->name('convert');
+            });
+        });
+
+        // Company Details Routes (Admin only)
+        Route::prefix('companies')->name('companies.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // View company details
+                Route::get('/details', [CompanyController::class, 'show'])->name('show');
+
+                // Update company details
+                Route::put('/{company}', [CompanyController::class, 'update'])->name('update');
+
+                // Upload and delete logo
+                Route::post('/{company}/logo', [CompanyController::class, 'uploadLogo'])->name('upload-logo');
+                Route::delete('/{company}/logo', [CompanyController::class, 'deleteLogo'])->name('delete-logo');
             });
         });
 
