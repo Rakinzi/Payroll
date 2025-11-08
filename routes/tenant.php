@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CompanyBankDetailController;
+use App\Http\Controllers\CurrencySetupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
@@ -299,6 +300,28 @@ Route::middleware([
         Route::prefix('security-logs')->name('security-logs.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
                 Route::get('/', [SecurityLogController::class, 'index'])->name('index');
+            });
+        });
+
+        // Currency Setup Routes (Admin only)
+        Route::prefix('currency-setup')->name('currency-setup.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // Main index page
+                Route::get('/', [CurrencySetupController::class, 'index'])->name('index');
+
+                // Currency Splits
+                Route::post('/splits', [CurrencySetupController::class, 'storeSplit'])->name('splits.store');
+                Route::put('/splits/{currencySplit}', [CurrencySetupController::class, 'updateSplit'])->name('splits.update');
+                Route::delete('/splits/{currencySplit}', [CurrencySetupController::class, 'destroySplit'])->name('splits.destroy');
+
+                // Exchange Rates
+                Route::post('/rates', [CurrencySetupController::class, 'storeRate'])->name('rates.store');
+                Route::put('/rates/{exchangeRate}', [CurrencySetupController::class, 'updateRate'])->name('rates.update');
+                Route::delete('/rates/{exchangeRate}', [CurrencySetupController::class, 'destroyRate'])->name('rates.destroy');
+
+                // API endpoints for currency conversion
+                Route::get('/current-rate', [CurrencySetupController::class, 'getCurrentRate'])->name('current-rate');
+                Route::post('/convert', [CurrencySetupController::class, 'convertCurrency'])->name('convert');
             });
         });
 
