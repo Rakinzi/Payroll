@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'tenant' => $this->getTenantInfo(),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
@@ -63,6 +64,24 @@ class HandleInertiaRequests extends Middleware
                 'warning' => $request->session()->get('warning'),
                 'info' => $request->session()->get('info'),
             ],
+        ];
+    }
+
+    /**
+     * Get tenant information to share with frontend.
+     */
+    private function getTenantInfo(): ?array
+    {
+        if (!tenancy()->initialized) {
+            return null;
+        }
+
+        $tenant = tenant();
+
+        return [
+            'id' => $tenant->id,
+            'name' => $tenant->system_name,
+            'logo' => $tenant->logo,
         ];
     }
 
