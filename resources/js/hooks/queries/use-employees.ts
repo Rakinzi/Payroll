@@ -1,18 +1,89 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from '@inertiajs/react';
 
-interface Employee {
+export interface Employee {
     id: string;
     emp_system_id: string;
+    // Personal Information
+    title?: string;
     firstname: string;
     surname: string;
     othername?: string;
+    nationality?: string;
+    nat_id?: string;
+    nassa_number?: string;
+    gender?: 'male' | 'female' | 'other';
+    date_of_birth?: string;
+    marital_status?: 'single' | 'married' | 'divorced' | 'widowed';
+    // Contact
+    home_address?: string;
+    city?: string;
+    country?: string;
+    phone?: string;
+    emp_email: string;
+    personal_email_address?: string;
+    // Identification
+    passport?: string;
+    driver_license?: string;
+    // Employment
+    hire_date?: string;
+    department_id?: string;
+    position_id?: string;
+    occupation_id?: string;
+    paypoint_id?: string;
     center_id: string;
+    average_working_days?: number;
+    working_hours?: number;
+    payment_basis?: 'monthly' | 'hourly' | 'daily';
+    payment_method?: 'bank_transfer' | 'cash' | 'cheque';
+    // Compensation
+    basic_salary?: number;
+    basic_salary_usd?: number;
+    leave_entitlement?: number;
+    leave_accrual?: number;
+    // Tax
+    tax_directives?: string;
+    disability_status?: boolean;
+    dependents?: number;
+    vehicle_engine_capacity?: number;
+    // Currency
+    zwl_percentage?: number;
+    usd_percentage?: number;
+    // NEC
+    nec_grade_id?: string;
+    // Role & Status
+    emp_role?: string;
+    is_active: boolean;
     is_ex: boolean;
-    date_engaged?: string;
     is_ex_on?: string;
+    employment_status?: string;
+    discharge_notes?: string;
+    // Relationships
+    department?: any;
+    position?: any;
+    occupation?: any;
+    paypoint?: any;
+    cost_center?: any;
+    nec_grade?: any;
+    // Timestamps
     created_at: string;
     updated_at: string;
+}
+
+export interface EmployeeBankDetail {
+    id: string;
+    employee_id: string;
+    bank_name: string;
+    branch_name: string;
+    branch_code?: string;
+    account_number: string;
+    account_name?: string;
+    account_type: 'Current' | 'Savings' | 'FCA';
+    account_currency: 'USD' | 'ZWL' | 'ZiG';
+    capacity: number;
+    is_default: boolean;
+    is_active: boolean;
+    masked_account?: string;
 }
 
 interface EmployeesResponse {
@@ -192,6 +263,129 @@ export function useDeleteEmployee() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: employeeKeys.lists() });
+        },
+    });
+}
+
+// Mutation for terminating employee
+export function useTerminateEmployee() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ employeeId, data }: { employeeId: string; data: { is_ex_on: string; employment_status: string; discharge_notes?: string } }) => {
+            router.post(`/employees/${employeeId}/terminate`, data, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: employeeKeys.lists() });
+                    queryClient.invalidateQueries({ queryKey: employeeKeys.detail(employeeId) });
+                },
+            });
+        },
+    });
+}
+
+// Mutation for restoring employee
+export function useRestoreEmployee() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (employeeId: string) => {
+            router.post(`/employees/${employeeId}/restore`, {}, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: employeeKeys.lists() });
+                    queryClient.invalidateQueries({ queryKey: employeeKeys.detail(employeeId) });
+                },
+            });
+        },
+    });
+}
+
+// Bank Details Query Keys
+export const bankDetailKeys = {
+    forEmployee: (employeeId: string) => [...employeeKeys.detail(employeeId), 'bank-details'] as const,
+};
+
+// Bank Details Mutations
+export function useCreateBankDetail(employeeId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: Partial<EmployeeBankDetail>) => {
+            const response = await fetch(`/employees/${employeeId}/bank-details`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ ...data, employee_id: employeeId }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create bank detail');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: bankDetailKeys.forEmployee(employeeId) });
+        },
+    });
+}
+
+export function useUpdateBankDetail(employeeId: string, bankDetailId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: Partial<EmployeeBankDetail>) => {
+            const response = await fetch(`/employees/${employeeId}/bank-details/${bankDetailId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to update bank detail');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: bankDetailKeys.forEmployee(employeeId) });
+        },
+    });
+}
+
+export function useDeleteBankDetail(employeeId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (bankDetailId: string) => {
+            const response = await fetch(`/employees/${employeeId}/bank-details/${bankDetailId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to delete bank detail');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: bankDetailKeys.forEmployee(employeeId) });
         },
     });
 }
