@@ -19,6 +19,7 @@ use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
+use App\Http\Controllers\VehicleBenefitBandController;
 use App\Http\Middleware\CheckCostCenter;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -338,6 +339,26 @@ Route::middleware([
                 // Upload and delete logo
                 Route::post('/{company}/logo', [CompanyController::class, 'uploadLogo'])->name('upload-logo');
                 Route::delete('/{company}/logo', [CompanyController::class, 'deleteLogo'])->name('delete-logo');
+            });
+        });
+
+        // Vehicle Benefits Bands Routes (Admin only)
+        Route::prefix('vehicle-benefits')->name('vehicle-benefits.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // List vehicle benefit bands
+                Route::get('/', [VehicleBenefitBandController::class, 'index'])->name('index');
+
+                // Create vehicle benefit band
+                Route::post('/', [VehicleBenefitBandController::class, 'store'])->name('store');
+
+                // Update vehicle benefit band
+                Route::put('/{vehicleBenefit}', [VehicleBenefitBandController::class, 'update'])->name('update');
+
+                // Delete vehicle benefit band
+                Route::delete('/{vehicleBenefit}', [VehicleBenefitBandController::class, 'destroy'])->name('destroy');
+
+                // Calculate benefit for capacity
+                Route::post('/calculate', [VehicleBenefitBandController::class, 'calculateBenefit'])->name('calculate');
             });
         });
 
