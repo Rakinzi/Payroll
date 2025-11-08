@@ -34,6 +34,22 @@ class DatabaseSeeder extends Seeder
         $this->call(TenantSeeder::class);
 
         $this->command->info('Central database seeded!');
+
+        // Automatically run tenant migrations and seeding
+        $this->command->newLine();
+        $this->command->info('Running tenant migrations and seeding...');
+
+        $this->command->call('tenants:migrate-fresh', [
+            '--force' => true,
+            '--seed' => true,
+        ]);
+
+        $this->command->newLine();
+        $this->command->info('✓ All databases migrated and seeded successfully!');
+        $this->command->newLine();
+        $this->command->warn('Default admin credentials for each tenant:');
+        $this->command->line('  Email: admin@example.com');
+        $this->command->line('  Password: password');
     }
 
     /**
