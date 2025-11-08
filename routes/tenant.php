@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\OrganizationalDataController;
+use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
 use App\Http\Middleware\CheckCostCenter;
 use Illuminate\Support\Facades\Route;
@@ -86,6 +88,15 @@ Route::middleware([
                 Route::put('/{transactionCode}', [ApiTransactionCodeController::class, 'update']);
                 Route::delete('/{transactionCode}', [ApiTransactionCodeController::class, 'destroy']);
             });
+
+            // Tax Credits API (admin only)
+            Route::middleware('permission:access all centers')->prefix('tax-credits')->group(function () {
+                Route::get('/', [ApiTaxCreditController::class, 'index']);
+                Route::post('/', [ApiTaxCreditController::class, 'store']);
+                Route::get('/{taxCredit}', [ApiTaxCreditController::class, 'show']);
+                Route::put('/{taxCredit}', [ApiTaxCreditController::class, 'update']);
+                Route::delete('/{taxCredit}', [ApiTaxCreditController::class, 'destroy']);
+            });
         });
 
         // Employee Management Routes
@@ -151,6 +162,32 @@ Route::middleware([
             // Delete transaction codes (admin only)
             Route::middleware('permission:access all centers')->group(function () {
                 Route::delete('/{transactionCode}', [TransactionCodeController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        // Tax Credit Management Routes
+        Route::prefix('tax-credits')->name('tax-credits.')->group(function () {
+            // List and view tax credits (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [TaxCreditController::class, 'index'])->name('index');
+                Route::get('/{taxCredit}', [TaxCreditController::class, 'show'])->name('show');
+            });
+
+            // Create tax credits (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/create', [TaxCreditController::class, 'create'])->name('create');
+                Route::post('/', [TaxCreditController::class, 'store'])->name('store');
+            });
+
+            // Edit tax credits (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/{taxCredit}/edit', [TaxCreditController::class, 'edit'])->name('edit');
+                Route::put('/{taxCredit}', [TaxCreditController::class, 'update'])->name('update');
+            });
+
+            // Delete tax credits (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::delete('/{taxCredit}', [TaxCreditController::class, 'destroy'])->name('destroy');
             });
         });
 

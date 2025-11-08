@@ -44,4 +44,65 @@ class TaxCredit extends Model
     {
         return $query->where('period', $period);
     }
+
+    /**
+     * Get formatted credit amount.
+     *
+     * @return string
+     */
+    public function getFormattedValueAttribute(): string
+    {
+        return number_format($this->credit_amount, 2);
+    }
+
+    /**
+     * Get credit value in specified currency.
+     *
+     * @param string $targetCurrency The target currency to convert to
+     * @param float|null $exchangeRate The exchange rate to use for conversion
+     * @return float
+     */
+    public function getValueInCurrency(string $targetCurrency, ?float $exchangeRate = null): float
+    {
+        if ($this->currency === $targetCurrency) {
+            return $this->credit_amount;
+        }
+
+        // Convert using exchange rate
+        if ($targetCurrency === self::CURRENCY_ZWG && $this->currency === self::CURRENCY_USD) {
+            return $this->credit_amount * ($exchangeRate ?? 1);
+        }
+
+        if ($targetCurrency === self::CURRENCY_USD && $this->currency === self::CURRENCY_ZWG) {
+            return $this->credit_amount / ($exchangeRate ?? 1);
+        }
+
+        return $this->credit_amount;
+    }
+
+    /**
+     * Get available currencies.
+     *
+     * @return array
+     */
+    public static function getCurrencies(): array
+    {
+        return [
+            self::CURRENCY_USD,
+            self::CURRENCY_ZWG,
+        ];
+    }
+
+    /**
+     * Get available periods.
+     *
+     * @return array
+     */
+    public static function getPeriods(): array
+    {
+        return [
+            self::PERIOD_MONTHLY,
+            self::PERIOD_ANNUAL,
+        ];
+    }
 }
