@@ -107,6 +107,72 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope query to users with admin role (via Spatie permissions).
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->whereHas('roles', function ($q) {
+            $q->where('name', 'admin');
+        });
+    }
+
+    /**
+     * Scope query to super admins only.
+     */
+    public function scopeSuperAdmins($query)
+    {
+        return $query->whereNull('center_id')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'admin');
+            });
+    }
+
+    /**
+     * Scope query to cost center admins only.
+     */
+    public function scopeCostCenterAdmins($query, ?string $centerId = null)
+    {
+        $query = $query->whereNotNull('center_id')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'admin');
+            });
+
+        if ($centerId) {
+            $query->where('center_id', $centerId);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Check if user is a cost center admin.
+     */
+    public function isCostCenterAdmin(): bool
+    {
+        return !$this->isSuperAdmin() && $this->hasRole('admin');
+    }
+
+    /**
+     * Get accessible cost centers for this user.
+     */
+    public function getAccessibleCostCenters()
+    {
+        if ($this->isSuperAdmin()) {
+            return CostCenter::all();
+        }
+
+        return CostCenter::where('id', $this->center_id)->get();
+    }
+
+    /**
+     * Check if this user is an admin (super or cost center).
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
      * Update last login information.
      */
     public function updateLoginInfo(string $ipAddress): void

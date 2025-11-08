@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\OrganizationalDataController;
 use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
 use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
@@ -209,6 +210,27 @@ Route::middleware([
             Route::middleware('permission:delete employees')->group(function () {
                 Route::delete('/{dischargedEmployee}', [DischargedEmployeesController::class, 'destroy'])->name('destroy');
             });
+        });
+
+        // Admin Management Routes (Super Admin only)
+        Route::prefix('admins')->name('admins.')->group(function () {
+            // List admins
+            Route::get('/', [AdminController::class, 'index'])->name('index');
+
+            // View admin details
+            Route::get('/{admin}', [AdminController::class, 'show'])->name('show');
+
+            // Create admin
+            Route::post('/', [AdminController::class, 'store'])->name('store');
+
+            // Update admin
+            Route::put('/{admin}', [AdminController::class, 'update'])->name('update');
+
+            // Delete admin
+            Route::delete('/{admin}', [AdminController::class, 'destroy'])->name('destroy');
+
+            // Reset admin password
+            Route::post('/{admin}/reset-password', [AdminController::class, 'resetPassword'])->name('reset-password');
         });
 
         // Payroll Routes (with permission middleware)
