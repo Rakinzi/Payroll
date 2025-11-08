@@ -53,6 +53,26 @@ Route::middleware([
         // API Routes
         Route::prefix('api')->group(function () {
             Route::get('/organizational-data', [OrganizationalDataController::class, 'index']);
+
+            // Company CRUD
+            Route::post('/companies', [OrganizationalDataController::class, 'storeCompany']);
+            Route::put('/companies/{id}', [OrganizationalDataController::class, 'updateCompany']);
+            Route::delete('/companies/{id}', [OrganizationalDataController::class, 'destroyCompany']);
+
+            // Tax Credit CRUD
+            Route::post('/tax-credits', [OrganizationalDataController::class, 'storeTaxCredit']);
+            Route::put('/tax-credits/{id}', [OrganizationalDataController::class, 'updateTaxCredit']);
+            Route::delete('/tax-credits/{id}', [OrganizationalDataController::class, 'destroyTaxCredit']);
+
+            // Vehicle Benefit Band CRUD
+            Route::post('/vehicle-benefit-bands', [OrganizationalDataController::class, 'storeVehicleBenefitBand']);
+            Route::put('/vehicle-benefit-bands/{id}', [OrganizationalDataController::class, 'updateVehicleBenefitBand']);
+            Route::delete('/vehicle-benefit-bands/{id}', [OrganizationalDataController::class, 'destroyVehicleBenefitBand']);
+
+            // Company Bank Detail CRUD
+            Route::post('/company-bank-details', [OrganizationalDataController::class, 'storeCompanyBankDetail']);
+            Route::put('/company-bank-details/{id}', [OrganizationalDataController::class, 'updateCompanyBankDetail']);
+            Route::delete('/company-bank-details/{id}', [OrganizationalDataController::class, 'destroyCompanyBankDetail']);
         });
 
         // Employee Management Routes (with permission middleware)

@@ -79,12 +79,63 @@ export interface Paypoint {
     is_active: boolean;
 }
 
+export interface Company {
+    id: string;
+    company_name: string;
+    company_email_address?: string;
+    phone_number?: string;
+    telephone_number?: string;
+    physical_address?: string;
+    description?: string;
+    logo?: string;
+    is_active: boolean;
+}
+
+export interface TaxCredit {
+    id: string;
+    credit_name: string;
+    credit_amount: number;
+    currency: 'USD' | 'ZWG';
+    period: 'monthly' | 'annual';
+    description?: string;
+    is_active: boolean;
+}
+
+export interface VehicleBenefitBand {
+    id: string;
+    engine_capacity_min: number;
+    engine_capacity_max?: number;
+    benefit_amount: number;
+    currency: 'USD' | 'ZWG';
+    period: 'monthly' | 'annual';
+    description?: string;
+    is_active: boolean;
+}
+
+export interface CompanyBankDetail {
+    id: string;
+    bank_name: string;
+    account_name: string;
+    account_number: string;
+    branch_name?: string;
+    branch_code?: string;
+    swift_code?: string;
+    currency: 'USD' | 'ZWG';
+    is_primary: boolean;
+    is_active: boolean;
+    description?: string;
+}
+
 export interface OrganizationalData {
+    company?: Company;
     departments: Department[];
     positions: Position[];
     transaction_codes: TransactionCode[];
     tax_bands: TaxBand[];
+    tax_credits: TaxCredit[];
     nec_grades: NECGrade[];
+    vehicle_benefit_bands: VehicleBenefitBand[];
+    company_bank_details: CompanyBankDetail[];
     industries: Industry[];
     occupations: Occupation[];
     paypoints: Paypoint[];
@@ -171,6 +222,26 @@ export function useOccupations() {
 export function usePaypoints() {
     const { data } = useOrganizationalData();
     return data?.paypoints ?? [];
+}
+
+export function useCompany() {
+    const { data } = useOrganizationalData();
+    return data?.company ?? null;
+}
+
+export function useTaxCredits() {
+    const { data } = useOrganizationalData();
+    return data?.tax_credits ?? [];
+}
+
+export function useVehicleBenefitBands() {
+    const { data } = useOrganizationalData();
+    return data?.vehicle_benefit_bands ?? [];
+}
+
+export function useCompanyBankDetails() {
+    const { data } = useOrganizationalData();
+    return data?.company_bank_details ?? [];
 }
 
 // Generic CRUD mutations

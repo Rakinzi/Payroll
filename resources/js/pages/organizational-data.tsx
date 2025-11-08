@@ -1,11 +1,28 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useOrganizationalData } from '@/hooks/queries/use-organizational-data';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Building, Briefcase, DollarSign, GraduationCap, MapPin, FileText, Users, TrendingUp } from 'lucide-react';
+import {
+    Building,
+    Briefcase,
+    DollarSign,
+    GraduationCap,
+    MapPin,
+    FileText,
+    Users,
+    TrendingUp,
+    CreditCard,
+    Car,
+    Landmark,
+} from 'lucide-react';
+import { CompanyTab } from './organizational-data/company-tab';
+import { TaxCreditsTab } from './organizational-data/tax-credits-tab';
+import { VehicleBenefitBandsTab } from './organizational-data/vehicle-benefit-bands-tab';
+import { CompanyBankDetailsTab } from './organizational-data/company-bank-details-tab';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
@@ -54,262 +71,42 @@ export default function OrganizationalDataPage() {
                     </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Departments</CardTitle>
-                            <Building className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{data?.departments.length ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Active departments</p>
-                        </CardContent>
-                    </Card>
+                <Tabs defaultValue="company" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="company">
+                            <Building className="mr-2 h-4 w-4" />
+                            Company
+                        </TabsTrigger>
+                        <TabsTrigger value="tax-credits">
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Tax Credits
+                        </TabsTrigger>
+                        <TabsTrigger value="vehicle-benefits">
+                            <Car className="mr-2 h-4 w-4" />
+                            Vehicle Benefits
+                        </TabsTrigger>
+                        <TabsTrigger value="bank-details">
+                            <Landmark className="mr-2 h-4 w-4" />
+                            Bank Details
+                        </TabsTrigger>
+                    </TabsList>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Positions</CardTitle>
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{data?.positions.length ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Job positions</p>
-                        </CardContent>
-                    </Card>
+                    <TabsContent value="company">
+                        <CompanyTab />
+                    </TabsContent>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Transaction Codes</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{data?.transaction_codes.length ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Payroll codes</p>
-                        </CardContent>
-                    </Card>
+                    <TabsContent value="tax-credits">
+                        <TaxCreditsTab />
+                    </TabsContent>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Tax Bands</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{data?.tax_bands.length ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Tax brackets</p>
-                        </CardContent>
-                    </Card>
-                </div>
+                    <TabsContent value="vehicle-benefits">
+                        <VehicleBenefitBandsTab />
+                    </TabsContent>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                    {/* Departments */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Building className="h-5 w-5" />
-                                Departments
-                            </CardTitle>
-                            <CardDescription>Organizational departments and divisions</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {data?.departments.slice(0, 5).map((dept) => (
-                                    <div
-                                        key={dept.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">{dept.dept_name}</p>
-                                            {dept.description && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    {dept.description}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                                {(data?.departments.length ?? 0) > 5 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        And {(data?.departments.length ?? 0) - 5} more...
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Positions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Briefcase className="h-5 w-5" />
-                                Positions
-                            </CardTitle>
-                            <CardDescription>Job positions and designations</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {data?.positions.slice(0, 5).map((position) => (
-                                    <div
-                                        key={position.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">{position.position_name}</p>
-                                            {position.description && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    {position.description}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                                {(data?.positions.length ?? 0) > 5 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        And {(data?.positions.length ?? 0) - 5} more...
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Transaction Codes */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <DollarSign className="h-5 w-5" />
-                                Transaction Codes
-                            </CardTitle>
-                            <CardDescription>Earnings, deductions, and contributions</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {data?.transaction_codes.slice(0, 5).map((code) => (
-                                    <div
-                                        key={code.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">
-                                                {code.code_number} - {code.code_name}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {code.code_category}
-                                                {code.is_benefit && ' • Employee Benefit'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {(data?.transaction_codes.length ?? 0) > 5 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        And {(data?.transaction_codes.length ?? 0) - 5} more...
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* NEC Grades */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <GraduationCap className="h-5 w-5" />
-                                NEC Grades
-                            </CardTitle>
-                            <CardDescription>Employment council grading system</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {data?.nec_grades.slice(0, 5).map((grade) => (
-                                    <div
-                                        key={grade.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">{grade.grade_name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {grade.contribution} contribution
-                                                {grade.is_automatic && ' • Automatic'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {(data?.nec_grades.length ?? 0) > 5 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        And {(data?.nec_grades.length ?? 0) - 5} more...
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Tax Bands */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="h-5 w-5" />
-                                Tax Bands
-                            </CardTitle>
-                            <CardDescription>Progressive tax brackets</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {data?.tax_bands.slice(0, 5).map((band) => (
-                                    <div
-                                        key={band.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">
-                                                {band.currency} - {band.period}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                ${band.min_salary.toLocaleString()} - $
-                                                {band.max_salary?.toLocaleString() ?? '∞'} at {band.tax_rate}%
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {(data?.tax_bands.length ?? 0) > 5 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        And {(data?.tax_bands.length ?? 0) - 5} more...
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Supporting Data */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Supporting Data
-                            </CardTitle>
-                            <CardDescription>Industries, occupations, and paypoints</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Industries</span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {data?.industries.length ?? 0}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Occupations</span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {data?.occupations.length ?? 0}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Paypoints</span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {data?.paypoints.length ?? 0}
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                    <TabsContent value="bank-details">
+                        <CompanyBankDetailsTab />
+                    </TabsContent>
+                </Tabs>
             </div>
         </AppLayout>
     );
