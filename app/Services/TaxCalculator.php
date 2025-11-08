@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Employee;
+use App\Models\TaxBand;
 use App\Models\TaxCredit;
 use Illuminate\Support\Collection;
 
@@ -122,58 +123,69 @@ class TaxCalculator
      *
      * @param float $taxableIncome Taxable income
      * @param string $currency The currency to calculate in
+     * @param string $period The period (monthly or annual)
      * @return float Tax amount
      */
-    private function calculateTaxFromBands(float $taxableIncome, string $currency): float
+    private function calculateTaxFromBands(float $taxableIncome, string $currency, string $period = 'monthly'): float
     {
-        // Get applicable tax bands for the currency
-        $taxBands = $this->getTaxBands($currency);
+        // Get applicable tax bands for the currency and period
+        $taxBands = $this->getTaxBands($currency, $period);
 
-        $taxAmount = 0;
+        $totalTax = 0;
         $remainingIncome = $taxableIncome;
 
         foreach ($taxBands as $band) {
+            // Skip if income is below this band's minimum
+            if ($remainingIncome <= $band->min_salary) {
+                continue;
+            }
+
+            // Calculate taxable amount in this band
+            $bandMin = $band->min_salary;
+            $bandMax = $band->max_salary ?? PHP_FLOAT_MAX;
+
+            $taxableInBand = min($remainingIncome, $bandMax) - $bandMin;
+            $taxableInBand = max(0, $taxableInBand);
+
+            if ($taxableInBand > 0) {
+                // Calculate tax: (amount in band * rate) + fixed deduction
+                $bandTax = ($taxableInBand * $band->tax_rate) + $band->tax_amount;
+                $totalTax += $bandTax;
+
+                // Reduce remaining income
+                $remainingIncome -= $taxableInBand;
+            }
+
+            // Break if we've covered all income
             if ($remainingIncome <= 0) {
                 break;
             }
-
-            $bandAmount = min($remainingIncome, $band['max_amount'] - $band['min_amount']);
-            $taxAmount += $bandAmount * ($band['rate'] / 100);
-            $remainingIncome -= $bandAmount;
         }
 
-        return $taxAmount;
+        return round($totalTax, 2);
     }
 
     /**
-     * Get tax bands for a currency.
+     * Get tax bands for a currency and period from database.
      *
-     * TODO: This should be moved to database configuration when tax bands are implemented.
-     *
-     * @param string $currency The currency
-     * @return array Tax bands
+     * @param string $currency The currency (USD or ZWG)
+     * @param string $period The period (monthly or annual)
+     * @return Collection Tax bands
      */
-    private function getTaxBands(string $currency): array
+    private function getTaxBands(string $currency, string $period = 'monthly'): Collection
     {
-        // Placeholder implementation
-        // In production, these should be retrieved from a TaxBand model/database
+        $bandType = strtolower($period . '_' . strtolower($currency));
 
-        if ($currency === 'USD') {
-            return [
-                ['min_amount' => 0, 'max_amount' => 3000, 'rate' => 20],
-                ['min_amount' => 3000, 'max_amount' => 10000, 'rate' => 25],
-                ['min_amount' => 10000, 'max_amount' => 20000, 'rate' => 30],
-                ['min_amount' => 20000, 'max_amount' => PHP_FLOAT_MAX, 'rate' => 35],
-            ];
-        }
+        // Map band type to scope method
+        $scopeMethod = match($bandType) {
+            'monthly_usd' => 'monthlyUsd',
+            'monthly_zwg' => 'monthlyZwl',
+            'annual_usd' => 'annualUsd',
+            'annual_zwg' => 'annualZwl',
+            default => 'monthlyUsd',
+        };
 
-        // ZWG tax bands (placeholder - adjust based on local regulations)
-        return [
-            ['min_amount' => 0, 'max_amount' => 100000, 'rate' => 20],
-            ['min_amount' => 100000, 'max_amount' => 300000, 'rate' => 25],
-            ['min_amount' => 300000, 'max_amount' => 600000, 'rate' => 30],
-            ['min_amount' => 600000, 'max_amount' => PHP_FLOAT_MAX, 'rate' => 35],
-        ];
+        return TaxBand::$scopeMethod()->orderBy('min_salary')->get();
     }
 
     /**
@@ -219,34 +231,47 @@ class TaxCalculator
      * @param Employee $employee The employee
      * @param float $grossIncome Gross income
      * @param string $currency The currency
+     * @param string $period The period (monthly or annual)
      * @return array Detailed breakdown
      */
-    public function getDetailedBreakdown(Employee $employee, float $grossIncome, string $currency = 'USD'): array
+    public function getDetailedBreakdown(Employee $employee, float $grossIncome, string $currency = 'USD', string $period = 'monthly'): array
     {
         $result = $this->calculateTax($employee, $grossIncome, $currency);
 
         // Add band-by-band breakdown
-        $taxBands = $this->getTaxBands($currency);
+        $taxBands = $this->getTaxBands($currency, $period);
         $bandBreakdown = [];
         $remainingIncome = $result['taxable_income'];
 
         foreach ($taxBands as $band) {
+            if ($remainingIncome <= $band->min_salary) {
+                continue;
+            }
+
+            $bandMin = $band->min_salary;
+            $bandMax = $band->max_salary ?? PHP_FLOAT_MAX;
+
+            $taxableInBand = min($remainingIncome, $bandMax) - $bandMin;
+            $taxableInBand = max(0, $taxableInBand);
+
+            if ($taxableInBand > 0) {
+                $bandTax = ($taxableInBand * $band->tax_rate) + $band->tax_amount;
+
+                $bandBreakdown[] = [
+                    'min_salary' => $band->min_salary,
+                    'max_salary' => $band->max_salary,
+                    'rate' => $band->tax_rate * 100, // Convert to percentage
+                    'fixed_deduction' => $band->tax_amount,
+                    'taxable_in_band' => $taxableInBand,
+                    'tax_in_band' => $bandTax,
+                ];
+
+                $remainingIncome -= $taxableInBand;
+            }
+
             if ($remainingIncome <= 0) {
                 break;
             }
-
-            $bandAmount = min($remainingIncome, $band['max_amount'] - $band['min_amount']);
-            $bandTax = $bandAmount * ($band['rate'] / 100);
-
-            $bandBreakdown[] = [
-                'min_amount' => $band['min_amount'],
-                'max_amount' => $band['max_amount'],
-                'rate' => $band['rate'],
-                'taxable_in_band' => $bandAmount,
-                'tax_in_band' => $bandTax,
-            ];
-
-            $remainingIncome -= $bandAmount;
         }
 
         $result['band_breakdown'] = $bandBreakdown;

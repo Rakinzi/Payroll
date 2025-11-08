@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
 use App\Http\Middleware\CheckCostCenter;
@@ -190,6 +191,29 @@ Route::middleware([
             // Delete tax credits (admin only)
             Route::middleware('permission:access all centers')->group(function () {
                 Route::delete('/{taxCredit}', [TaxCreditController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        // Tax Bands Management Routes
+        Route::prefix('tax-bands')->name('tax-bands.')->group(function () {
+            // List all tax bands (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [TaxBandController::class, 'index'])->name('index');
+            });
+
+            // Create tax band (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::post('/{bandType}', [TaxBandController::class, 'store'])->name('store');
+            });
+
+            // Update tax band (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::put('/{bandType}/{id}', [TaxBandController::class, 'update'])->name('update');
+            });
+
+            // Delete tax band (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::delete('/{bandType}/{id}', [TaxBandController::class, 'destroy'])->name('destroy');
             });
         });
 
