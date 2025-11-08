@@ -89,4 +89,89 @@ class TransactionCode extends Model
     {
         return !$this->is_editable;
     }
+
+    /**
+     * Calculate the transaction amount based on base amount or employee salary.
+     *
+     * @param float $baseAmount The base amount to calculate from (e.g., basic salary)
+     * @param float $employeeSalary The employee's total salary
+     * @return float The calculated amount
+     */
+    public function calculateAmount(float $baseAmount, float $employeeSalary): float
+    {
+        // If it's a fixed amount, return it directly
+        if ($this->code_amount && $this->code_amount > 0) {
+            return $this->code_amount;
+        }
+
+        // If it's a percentage-based calculation
+        if ($this->code_percentage && $this->code_percentage > 0) {
+            $calculatedAmount = $baseAmount * ($this->code_percentage / 100);
+
+            // Apply threshold limits if set
+            if ($this->minimum_threshold && $calculatedAmount < $this->minimum_threshold) {
+                return $this->minimum_threshold;
+            }
+
+            if ($this->maximum_threshold && $calculatedAmount > $this->maximum_threshold) {
+                return $this->maximum_threshold;
+            }
+
+            return $calculatedAmount;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Determine if this transaction should apply to an employee based on thresholds.
+     *
+     * @param Employee $employee The employee to check
+     * @return bool True if the transaction should apply
+     */
+    public function shouldApplyTransaction(Employee $employee): bool
+    {
+        // If no thresholds are set, transaction applies to all
+        if (!$this->minimum_threshold && !$this->maximum_threshold) {
+            return true;
+        }
+
+        $salary = $employee->basic_salary ?? 0;
+
+        // Check minimum threshold
+        if ($this->minimum_threshold && $salary < $this->minimum_threshold) {
+            return false;
+        }
+
+        // Check maximum threshold
+        if ($this->maximum_threshold && $salary > $this->maximum_threshold) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get formatted code number with prefix.
+     *
+     * @return string
+     */
+    public function getFormattedCodeAttribute(): string
+    {
+        return 'TC-' . str_pad($this->code_number, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the available categories.
+     *
+     * @return array
+     */
+    public static function getCategories(): array
+    {
+        return [
+            self::CATEGORY_EARNING,
+            self::CATEGORY_DEDUCTION,
+            self::CATEGORY_CONTRIBUTION,
+        ];
+    }
 }

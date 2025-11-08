@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\OrganizationalDataController;
+use App\Http\Controllers\Api\TransactionCodeController as ApiTransactionCodeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\TransactionCodeController;
 use App\Http\Middleware\CheckCostCenter;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -75,6 +77,15 @@ Route::middleware([
             Route::post('/company-bank-details', [OrganizationalDataController::class, 'storeCompanyBankDetail']);
             Route::put('/company-bank-details/{id}', [OrganizationalDataController::class, 'updateCompanyBankDetail']);
             Route::delete('/company-bank-details/{id}', [OrganizationalDataController::class, 'destroyCompanyBankDetail']);
+
+            // Transaction Codes API (admin only)
+            Route::middleware('permission:access all centers')->prefix('transaction-codes')->group(function () {
+                Route::get('/', [ApiTransactionCodeController::class, 'index']);
+                Route::post('/', [ApiTransactionCodeController::class, 'store']);
+                Route::get('/{transactionCode}', [ApiTransactionCodeController::class, 'show']);
+                Route::put('/{transactionCode}', [ApiTransactionCodeController::class, 'update']);
+                Route::delete('/{transactionCode}', [ApiTransactionCodeController::class, 'destroy']);
+            });
         });
 
         // Employee Management Routes
@@ -114,6 +125,32 @@ Route::middleware([
                 Route::post('/', [EmployeeBankDetailController::class, 'store'])->name('store');
                 Route::put('/{bankDetail}', [EmployeeBankDetailController::class, 'update'])->name('update');
                 Route::delete('/{bankDetail}', [EmployeeBankDetailController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        // Transaction Code Management Routes
+        Route::prefix('transaction-codes')->name('transaction-codes.')->group(function () {
+            // List and view transaction codes
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [TransactionCodeController::class, 'index'])->name('index');
+                Route::get('/{transactionCode}', [TransactionCodeController::class, 'show'])->name('show');
+            });
+
+            // Create transaction codes (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/create', [TransactionCodeController::class, 'create'])->name('create');
+                Route::post('/', [TransactionCodeController::class, 'store'])->name('store');
+            });
+
+            // Edit transaction codes (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/{transactionCode}/edit', [TransactionCodeController::class, 'edit'])->name('edit');
+                Route::put('/{transactionCode}', [TransactionCodeController::class, 'update'])->name('update');
+            });
+
+            // Delete transaction codes (admin only)
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::delete('/{transactionCode}', [TransactionCodeController::class, 'destroy'])->name('destroy');
             });
         });
 

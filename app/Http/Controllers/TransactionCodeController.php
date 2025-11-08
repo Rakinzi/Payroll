@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\TransactionCode;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TransactionCodeController extends Controller
 {
@@ -32,24 +32,34 @@ class TransactionCodeController extends Controller
 
         // Filter by active status
         if ($request->has('is_active')) {
-            $query->where('is_active', $request->boolean('is_active'));
+            $query->where('is_active', $request->get('is_active'));
         }
 
         // Filter by benefits only
-        if ($request->has('is_benefit') && $request->boolean('is_benefit')) {
+        if ($request->has('is_benefit') && $request->get('is_benefit')) {
             $query->where('is_benefit', true);
         }
 
-        $perPage = $request->get('per_page', 25);
-        $transactionCodes = $query->orderBy('code_number', 'asc')->paginate($perPage);
+        $transactionCodes = $query->orderBy('code_number', 'asc')->paginate(25);
 
-        // Add formatted_code to each transaction code
-        $transactionCodes->getCollection()->transform(function ($code) {
-            $code->formatted_code = $code->formatted_code;
-            return $code;
-        });
+        return Inertia::render('transaction-codes/index', [
+            'transactionCodes' => $transactionCodes,
+            'filters' => $request->only(['search', 'category', 'is_active', 'is_benefit']),
+            'categories' => TransactionCode::getCategories(),
+        ]);
+    }
 
-        return response()->json($transactionCodes);
+    /**
+     * Show the form for creating a new transaction code.
+     */
+    public function create()
+    {
+        $nextCodeNumber = $this->getNextCodeNumber();
+
+        return Inertia::render('transaction-codes/create', [
+            'nextCodeNumber' => $nextCodeNumber,
+            'categories' => TransactionCode::getCategories(),
+        ]);
     }
 
     /**
@@ -72,25 +82,23 @@ class TransactionCodeController extends Controller
 
         // Validate that is_benefit can only be true for Earnings
         if (($validated['is_benefit'] ?? false) && $validated['code_category'] !== TransactionCode::CATEGORY_EARNING) {
-            return response()->json([
-                'message' => 'Benefits can only be assigned to Earning transaction codes.',
-                'errors' => ['is_benefit' => ['Benefits can only be assigned to Earning transaction codes.']]
-            ], 422);
+            return back()->withErrors([
+                'is_benefit' => 'Benefits can only be assigned to Earning transaction codes.'
+            ]);
         }
 
         // Auto-generate code number if not provided
         if (empty($validated['code_number'])) {
-            $lastCode = TransactionCode::orderBy('code_number', 'desc')->first();
-            $validated['code_number'] = $lastCode ? $lastCode->code_number + 1 : 1;
+            $validated['code_number'] = $this->getNextCodeNumber();
         }
 
         // Set is_editable to true for user-created codes
         $validated['is_editable'] = true;
 
         $transactionCode = TransactionCode::create($validated);
-        $transactionCode->formatted_code = $transactionCode->formatted_code;
 
-        return response()->json($transactionCode, 201);
+        return redirect()->route('transaction-codes.index')
+            ->with('success', "Transaction code {$transactionCode->formatted_code} created successfully");
     }
 
     /**
@@ -98,8 +106,26 @@ class TransactionCodeController extends Controller
      */
     public function show(TransactionCode $transactionCode)
     {
-        $transactionCode->formatted_code = $transactionCode->formatted_code;
-        return response()->json($transactionCode);
+        return Inertia::render('transaction-codes/show', [
+            'transactionCode' => $transactionCode,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified transaction code.
+     */
+    public function edit(TransactionCode $transactionCode)
+    {
+        // Prevent editing system codes
+        if ($transactionCode->isSystem()) {
+            return redirect()->route('transaction-codes.index')
+                ->with('error', 'System transaction codes cannot be edited.');
+        }
+
+        return Inertia::render('transaction-codes/edit', [
+            'transactionCode' => $transactionCode,
+            'categories' => TransactionCode::getCategories(),
+        ]);
     }
 
     /**
@@ -109,10 +135,8 @@ class TransactionCodeController extends Controller
     {
         // Prevent updating system codes
         if ($transactionCode->isSystem()) {
-            return response()->json([
-                'message' => 'System transaction codes cannot be modified.',
-                'errors' => ['code' => ['This is a system code and cannot be modified.']]
-            ], 403);
+            return redirect()->route('transaction-codes.index')
+                ->with('error', 'System transaction codes cannot be modified.');
         }
 
         $validated = $request->validate([
@@ -130,16 +154,15 @@ class TransactionCodeController extends Controller
 
         // Validate that is_benefit can only be true for Earnings
         if (($validated['is_benefit'] ?? false) && $validated['code_category'] !== TransactionCode::CATEGORY_EARNING) {
-            return response()->json([
-                'message' => 'Benefits can only be assigned to Earning transaction codes.',
-                'errors' => ['is_benefit' => ['Benefits can only be assigned to Earning transaction codes.']]
-            ], 422);
+            return back()->withErrors([
+                'is_benefit' => 'Benefits can only be assigned to Earning transaction codes.'
+            ]);
         }
 
         $transactionCode->update($validated);
-        $transactionCode->formatted_code = $transactionCode->formatted_code;
 
-        return response()->json($transactionCode);
+        return redirect()->route('transaction-codes.index')
+            ->with('success', "Transaction code {$transactionCode->formatted_code} updated successfully");
     }
 
     /**
@@ -149,22 +172,28 @@ class TransactionCodeController extends Controller
     {
         // Prevent deleting system codes
         if ($transactionCode->isSystem()) {
-            return response()->json([
-                'message' => 'System transaction codes cannot be deleted.',
-                'errors' => ['code' => ['This is a system code and cannot be deleted.']]
-            ], 403);
+            return redirect()->route('transaction-codes.index')
+                ->with('error', 'System transaction codes cannot be deleted.');
         }
 
         // Check if code is in use by NEC grades
         if ($transactionCode->necGrades()->count() > 0) {
-            return response()->json([
-                'message' => 'Transaction code is currently in use and cannot be deleted.',
-                'errors' => ['code' => ['This transaction code is in use by NEC grades and cannot be deleted.']]
-            ], 422);
+            return redirect()->route('transaction-codes.index')
+                ->with('error', "Transaction code {$transactionCode->formatted_code} is currently in use and cannot be deleted.");
         }
 
         $transactionCode->delete();
 
-        return response()->json(['message' => 'Transaction code deleted successfully']);
+        return redirect()->route('transaction-codes.index')
+            ->with('success', "Transaction code {$transactionCode->formatted_code} deleted successfully");
+    }
+
+    /**
+     * Get the next available code number.
+     */
+    private function getNextCodeNumber(): int
+    {
+        $lastCode = TransactionCode::orderBy('code_number', 'desc')->first();
+        return $lastCode ? $lastCode->code_number + 1 : 1;
     }
 }
