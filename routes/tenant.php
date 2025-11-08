@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\OrganizationalDataController;
 use App\Http\Controllers\Api\TaxCreditController as ApiTaxCreditController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DischargedEmployeesController;
 use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
@@ -283,6 +285,20 @@ Route::middleware([
             // Set default bank account (admin only)
             Route::middleware('permission:access all centers')->group(function () {
                 Route::post('/{companyBankDetail}/set-default', [CompanyBankDetailController::class, 'setDefault'])->name('set-default');
+            });
+        });
+
+        // Activity Log Routes (Super Admin only)
+        Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            });
+        });
+
+        // Security Log Routes (Super Admin only)
+        Route::prefix('security-logs')->name('security-logs.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::get('/', [SecurityLogController::class, 'index'])->name('index');
             });
         });
 
