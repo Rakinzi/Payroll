@@ -39,6 +39,28 @@ class Employee extends Model
     ];
 
     /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate employee ID on create if not provided
+        static::creating(function ($employee) {
+            if (empty($employee->emp_system_id)) {
+                $employee->emp_system_id = static::generateEmployeeId();
+            }
+        });
+
+        // Auto-generate employee ID on update if cleared/empty
+        static::updating(function ($employee) {
+            if (empty($employee->emp_system_id)) {
+                $employee->emp_system_id = static::generateEmployeeId();
+            }
+        });
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -131,5 +153,32 @@ class Employee extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Generate a unique employee ID.
+     * Format: EMP-YYYY-NNNN (e.g., EMP-2025-0001)
+     */
+    public static function generateEmployeeId(): string
+    {
+        $year = now()->year;
+        $prefix = "EMP-{$year}-";
+
+        // Get the last employee created this year
+        $lastEmployee = static::where('emp_system_id', 'LIKE', "{$prefix}%")
+            ->orderBy('emp_system_id', 'desc')
+            ->first();
+
+        if ($lastEmployee) {
+            // Extract the number from the last ID and increment
+            $lastNumber = (int) substr($lastEmployee->emp_system_id, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            // First employee this year
+            $newNumber = 1;
+        }
+
+        // Pad with zeros to make it 4 digits
+        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }
