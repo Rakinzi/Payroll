@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { useSyncAuth } from '@/hooks/use-sync-auth';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
@@ -9,6 +10,9 @@ export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+    // Sync Inertia auth props with Zustand stores
+    useSyncAuth();
+
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
