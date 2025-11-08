@@ -17,6 +17,7 @@ use App\Http\Controllers\EmployeeBankDetailController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SecurityLogController;
+use App\Http\Controllers\SpreadsheetImportController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
@@ -385,6 +386,32 @@ Route::middleware([
                 // Employee assignment
                 Route::post('/{payroll}/assign-employees', [PayrollController::class, 'assignEmployees'])->name('assign-employees');
                 Route::delete('/{payroll}/employees/{employee}', [PayrollController::class, 'removeEmployee'])->name('remove-employee');
+            });
+        });
+
+        // Spreadsheet Import/Export Routes (Admin only)
+        Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // List import sessions
+                Route::get('/', [SpreadsheetImportController::class, 'index'])->name('index');
+
+                // Upload file
+                Route::post('/upload', [SpreadsheetImportController::class, 'upload'])->name('upload');
+
+                // Preview import
+                Route::get('/{session}/preview', [SpreadsheetImportController::class, 'preview'])->name('preview');
+
+                // Process import
+                Route::post('/{session}/process', [SpreadsheetImportController::class, 'process'])->name('process');
+
+                // Get status (for polling)
+                Route::get('/{session}/status', [SpreadsheetImportController::class, 'status'])->name('status');
+
+                // Delete session
+                Route::delete('/{session}', [SpreadsheetImportController::class, 'destroy'])->name('destroy');
+
+                // Export data
+                Route::post('/export', [SpreadsheetImportController::class, 'export'])->name('export');
             });
         });
 
