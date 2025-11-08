@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\OrganizationalDataController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckCostCenter;
@@ -49,6 +50,11 @@ Route::middleware([
         // Dashboard
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+        // API Routes
+        Route::prefix('api')->group(function () {
+            Route::get('/organizational-data', [OrganizationalDataController::class, 'index']);
+        });
+
         // Employee Management Routes (with permission middleware)
         Route::middleware('permission:view employees')->group(function () {
             Route::get('/employees', function () {
@@ -80,6 +86,13 @@ Route::middleware([
             Route::get('/', function () {
                 return Inertia::render('reports/index');
             })->name('reports.index');
+        });
+
+        // Organizational Data Routes (admin only)
+        Route::middleware('permission:access all centers')->group(function () {
+            Route::get('/organizational-data', function () {
+                return Inertia::render('organizational-data');
+            })->name('organizational-data');
         });
 
         // Super Admin Only Routes
