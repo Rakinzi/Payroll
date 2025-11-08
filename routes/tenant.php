@@ -18,6 +18,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\SpreadsheetImportController;
+use App\Http\Controllers\LeaveApplicationController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
@@ -413,6 +414,21 @@ Route::middleware([
                 // Export data
                 Route::post('/export', [SpreadsheetImportController::class, 'export'])->name('export');
             });
+        });
+
+        // Leave Management Routes
+        Route::prefix('leave-applications')->name('leave-applications.')->group(function () {
+            // List leave applications
+            Route::get('/', [LeaveApplicationController::class, 'index'])->name('index');
+
+            // Create leave application
+            Route::get('/create', [LeaveApplicationController::class, 'create'])->name('create');
+            Route::post('/', [LeaveApplicationController::class, 'store'])->name('store');
+
+            // View, update, delete leave application
+            Route::get('/{leaveApplication}', [LeaveApplicationController::class, 'show'])->name('show');
+            Route::put('/{leaveApplication}', [LeaveApplicationController::class, 'update'])->name('update');
+            Route::delete('/{leaveApplication}', [LeaveApplicationController::class, 'destroy'])->name('destroy');
         });
 
         // Payroll Processing Routes (with permission middleware)
