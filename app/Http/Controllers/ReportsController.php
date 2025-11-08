@@ -1,0 +1,411 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ActivityLog;
+use App\Models\CostAnalysisCache;
+use App\Models\ItfForm;
+use App\Models\Payroll;
+use App\Models\ScheduledReport;
+use App\Models\ThirdPartyReport;
+use App\Models\VarianceAnalysis;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class ReportsController extends Controller
+{
+    /**
+     * Display main reports dashboard.
+     */
+    public function index(Request $request)
+    {
+        $payrolls = Payroll::where('is_active', true)
+            ->select('id', 'payroll_name', 'payroll_type', 'payroll_currency')
+            ->orderBy('payroll_name')
+            ->get();
+
+        $recentReports = collect()
+            ->merge(CostAnalysisCache::with('payroll:id,payroll_name')
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(fn($r) => [
+                    'id' => $r->id,
+                    'type' => 'cost_analysis',
+                    'name' => $r->report_type_display,
+                    'payroll' => $r->payroll->payroll_name,
+                    'generated_at' => $r->generated_at->toISOString(),
+                ]))
+            ->merge(ItfForm::with('payroll:id,payroll_name')
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(fn($r) => [
+                    'id' => $r->id,
+                    'type' => 'itf_form',
+                    'name' => $r->form_display,
+                    'payroll' => $r->payroll->payroll_name,
+                    'generated_at' => $r->generated_at->toISOString(),
+                ]))
+            ->sortByDesc('generated_at')
+            ->take(10)
+            ->values();
+
+        $scheduledReports = ScheduledReport::with(['payroll:id,payroll_name', 'user:id,name'])
+            ->where(function ($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('is_global', true);
+            })
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($schedule) {
+                return [
+                    'id' => $schedule->id,
+                    'report_type' => $schedule->report_type,
+                    'payroll' => [
+                        'id' => $schedule->payroll->id,
+                        'payroll_name' => $schedule->payroll->payroll_name,
+                    ],
+                    'frequency' => $schedule->frequency,
+                    'frequency_display' => $schedule->frequency_display,
+                    'next_run_at' => $schedule->next_run_at?->toISOString(),
+                    'is_global' => $schedule->is_global,
+                ];
+            });
+
+        return Inertia::render('reports/index', [
+            'payrolls' => $payrolls,
+            'recentReports' => $recentReports,
+            'scheduledReports' => $scheduledReports,
+            'reportTypes' => [
+                'cost_analysis' => 'Cost Analysis Reports',
+                'compliance' => 'Compliance Reports',
+                'variance' => 'Variance Analysis',
+                'third_party' => 'Third Party Reports',
+            ],
+        ]);
+    }
+
+    /**
+     * Generate cost analysis report.
+     */
+    public function generateCostAnalysis(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'report_type' => 'required|in:department,designation,codes,leave',
+            'period_start' => 'required|date',
+            'period_end' => 'required|date|after_or_equal:period_start',
+            'currency' => 'required|in:ZWG,USD',
+        ]);
+
+        try {
+            // For now, create a basic report structure
+            // In production, this would query actual payroll data
+            $report = CostAnalysisCache::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'report_type' => $validated['report_type'],
+                'period_start' => $validated['period_start'],
+                'period_end' => $validated['period_end'],
+                'currency' => $validated['currency'],
+                'total_costs' => 0, // Would be calculated from actual data
+                'generated_at' => now(),
+                'expires_at' => now()->addHours(24),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated cost analysis report: {$report->report_type_display}",
+                'model_type' => 'CostAnalysisCache',
+                'model_id' => $report->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'report_id' => $report->id,
+                'download_url' => route('reports.cost-analysis.download', $report->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download cost analysis report as PDF.
+     */
+    public function downloadCostAnalysis(CostAnalysisCache $report)
+    {
+        if (!$report->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.cost-analysis', [
+            'report' => $report,
+            'payroll' => $report->payroll,
+            'breakdownDetails' => $report->breakdownDetails,
+        ])
+        ->setPaper('a4', 'portrait');
+
+        return $pdf->download("cost_analysis_{$report->id}.pdf");
+    }
+
+    /**
+     * Generate ITF form.
+     */
+    public function generateItfForm(Request $request)
+    {
+        $validated = $request->validate(ItfForm::rules());
+
+        try {
+            $form = ItfForm::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'form_type' => $validated['form_type'],
+                'tax_year' => $validated['tax_year'],
+                'currency' => $validated['currency'],
+                'total_gross_income' => 0,
+                'total_taxable_income' => 0,
+                'total_tax_deducted' => 0,
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated ITF form: {$form->form_display}",
+                'model_type' => 'ItfForm',
+                'model_id' => $form->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'form_id' => $form->id,
+                'download_url' => route('reports.itf-forms.download', $form->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download ITF form as PDF.
+     */
+    public function downloadItfForm(ItfForm $form)
+    {
+        if (!$form->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.itf-form', [
+            'form' => $form,
+            'payroll' => $form->payroll,
+            'details' => $form->details,
+        ])
+        ->setPaper('a4', 'portrait');
+
+        return $pdf->download("itf_{$form->form_type}_{$form->tax_year}.pdf");
+    }
+
+    /**
+     * Generate variance analysis.
+     */
+    public function generateVarianceAnalysis(Request $request)
+    {
+        $validated = $request->validate(VarianceAnalysis::rules());
+
+        try {
+            $analysis = VarianceAnalysis::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'analysis_type' => $validated['analysis_type'],
+                'baseline_period' => $validated['baseline_period'],
+                'comparison_period' => $validated['comparison_period'],
+                'total_variance_zwg' => 0,
+                'total_variance_usd' => 0,
+                'variance_percentage' => 0,
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated variance analysis: {$analysis->analysis_display}",
+                'model_type' => 'VarianceAnalysis',
+                'model_id' => $analysis->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'analysis_id' => $analysis->id,
+                'download_url' => route('reports.variance-analysis.download', $analysis->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download variance analysis as PDF.
+     */
+    public function downloadVarianceAnalysis(VarianceAnalysis $analysis)
+    {
+        if (!$analysis->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.variance-analysis', [
+            'analysis' => $analysis,
+            'payroll' => $analysis->payroll,
+            'details' => $analysis->details,
+        ])
+        ->setPaper('a4', 'landscape');
+
+        return $pdf->download("variance_analysis_{$analysis->id}.pdf");
+    }
+
+    /**
+     * Generate third-party report.
+     */
+    public function generateThirdPartyReport(Request $request)
+    {
+        $validated = $request->validate(ThirdPartyReport::rules());
+
+        try {
+            $report = ThirdPartyReport::create([
+                'payroll_id' => $validated['payroll_id'],
+                'generated_by' => auth()->id(),
+                'report_type' => $validated['report_type'],
+                'period_start' => $validated['period_start'],
+                'period_end' => $validated['period_end'],
+                'currency' => $validated['currency'],
+                'total_amount' => 0,
+                'submission_status' => 'draft',
+                'generated_at' => now(),
+            ]);
+
+            // Log generation
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => ActivityLog::ACTION_CREATE,
+                'description' => "Generated third-party report: {$report->report_type_display}",
+                'model_type' => 'ThirdPartyReport',
+                'model_id' => $report->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'report_id' => $report->id,
+                'download_url' => route('reports.third-party.download', $report->id),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download third-party report as PDF.
+     */
+    public function downloadThirdPartyReport(ThirdPartyReport $report)
+    {
+        if (!$report->canAccess(auth()->user())) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('reports.third-party', [
+            'report' => $report,
+            'payroll' => $report->payroll,
+            'details' => $report->details,
+        ])
+        ->setPaper('a4', 'portrait');
+
+        return $pdf->download("{$report->report_type}_{$report->id}.pdf");
+    }
+
+    /**
+     * Submit third-party report.
+     */
+    public function submitThirdPartyReport(Request $request, ThirdPartyReport $report)
+    {
+        if (!$report->can_submit) {
+            return back()->withErrors(['error' => 'Report cannot be submitted']);
+        }
+
+        $reference = 'REF-' . strtoupper(uniqid());
+        $report->markAsSubmitted($reference);
+
+        // Log submission
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => ActivityLog::ACTION_UPDATE,
+            'description' => "Submitted third-party report: {$report->report_type_display} (Ref: {$reference})",
+            'model_type' => 'ThirdPartyReport',
+            'model_id' => $report->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return back()->with('success', "Report submitted successfully. Reference: {$reference}");
+    }
+
+    /**
+     * Create scheduled report.
+     */
+    public function createScheduledReport(Request $request)
+    {
+        $validated = $request->validate(ScheduledReport::rules());
+
+        $schedule = ScheduledReport::create([
+            'user_id' => auth()->id(),
+            'payroll_id' => $validated['payroll_id'],
+            'report_type' => $validated['report_type'],
+            'parameters' => $validated['parameters'] ?? [],
+            'frequency' => $validated['frequency'],
+            'email_recipients' => $validated['email_recipients'] ?? null,
+            'is_active' => true,
+            'is_global' => false,
+            'next_run_at' => now()->addDay(), // Set initial run
+        ]);
+
+        return back()->with('success', 'Scheduled report created successfully');
+    }
+
+    /**
+     * Delete scheduled report.
+     */
+    public function deleteScheduledReport(ScheduledReport $schedule)
+    {
+        if ($schedule->user_id !== auth()->id() && !auth()->user()->hasPermissionTo('access all centers')) {
+            abort(403);
+        }
+
+        $schedule->delete();
+
+        return back()->with('success', 'Scheduled report deleted successfully');
+    }
+}

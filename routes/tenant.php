@@ -20,6 +20,7 @@ use App\Http\Controllers\SecurityLogController;
 use App\Http\Controllers\SpreadsheetImportController;
 use App\Http\Controllers\LeaveApplicationController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\TaxBandController;
 use App\Http\Controllers\TaxCreditController;
 use App\Http\Controllers\TransactionCodeController;
@@ -455,6 +456,35 @@ Route::middleware([
 
                 // Delete payslip
                 Route::delete('/{payslip}', [PayslipController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        // Reports Management Routes (Admin only)
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::middleware('permission:access all centers')->group(function () {
+                // Main reports dashboard
+                Route::get('/', [ReportsController::class, 'index'])->name('index');
+
+                // Cost Analysis
+                Route::post('/cost-analysis/generate', [ReportsController::class, 'generateCostAnalysis'])->name('cost-analysis.generate');
+                Route::get('/cost-analysis/{report}/download', [ReportsController::class, 'downloadCostAnalysis'])->name('cost-analysis.download');
+
+                // ITF Forms
+                Route::post('/itf-forms/generate', [ReportsController::class, 'generateItfForm'])->name('itf-forms.generate');
+                Route::get('/itf-forms/{form}/download', [ReportsController::class, 'downloadItfForm'])->name('itf-forms.download');
+
+                // Variance Analysis
+                Route::post('/variance-analysis/generate', [ReportsController::class, 'generateVarianceAnalysis'])->name('variance-analysis.generate');
+                Route::get('/variance-analysis/{analysis}/download', [ReportsController::class, 'downloadVarianceAnalysis'])->name('variance-analysis.download');
+
+                // Third-Party Reports
+                Route::post('/third-party/generate', [ReportsController::class, 'generateThirdPartyReport'])->name('third-party.generate');
+                Route::get('/third-party/{report}/download', [ReportsController::class, 'downloadThirdPartyReport'])->name('third-party.download');
+                Route::post('/third-party/{report}/submit', [ReportsController::class, 'submitThirdPartyReport'])->name('third-party.submit');
+
+                // Scheduled Reports
+                Route::post('/scheduled/create', [ReportsController::class, 'createScheduledReport'])->name('scheduled.create');
+                Route::delete('/scheduled/{schedule}', [ReportsController::class, 'deleteScheduledReport'])->name('scheduled.delete');
             });
         });
 
