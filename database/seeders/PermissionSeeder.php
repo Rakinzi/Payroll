@@ -65,18 +65,18 @@ class PermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create roles and assign permissions
 
         // Super Admin - has all permissions
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $superAdmin->givePermissionTo(Permission::all());
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdmin->syncPermissions(Permission::all());
 
         // Admin - has most permissions except system-wide ones
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo([
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->syncPermissions([
             'view employees',
             'create employees',
             'edit employees',
@@ -100,8 +100,8 @@ class PermissionSeeder extends Seeder
         ]);
 
         // Payroll Manager - payroll focused
-        $payrollManager = Role::create(['name' => 'payroll-manager']);
-        $payrollManager->givePermissionTo([
+        $payrollManager = Role::firstOrCreate(['name' => 'payroll-manager']);
+        $payrollManager->syncPermissions([
             'view employees',
             'view payroll',
             'create payroll',
@@ -113,8 +113,8 @@ class PermissionSeeder extends Seeder
         ]);
 
         // HR Manager - employee and leave focused
-        $hrManager = Role::create(['name' => 'hr-manager']);
-        $hrManager->givePermissionTo([
+        $hrManager = Role::firstOrCreate(['name' => 'hr-manager']);
+        $hrManager->syncPermissions([
             'view employees',
             'create employees',
             'edit employees',
@@ -127,8 +127,8 @@ class PermissionSeeder extends Seeder
         ]);
 
         // Employee - limited self-service permissions
-        $employee = Role::create(['name' => 'employee']);
-        $employee->givePermissionTo([
+        $employee = Role::firstOrCreate(['name' => 'employee']);
+        $employee->syncPermissions([
             'view employees', // Limited to own data via policy
             'create leaves',   // For own leave requests
             'view leaves',     // For own leaves

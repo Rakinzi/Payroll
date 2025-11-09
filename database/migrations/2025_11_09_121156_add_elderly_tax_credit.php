@@ -12,15 +12,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Insert ELDERLY_ALLOWANCE tax credit
+        // Insert ELDERLY_ALLOWANCE tax credit (USD version)
         DB::table('tax_credits')->insert([
             [
+                'id' => \Illuminate\Support\Str::uuid(),
                 'credit_name' => 'ELDERLY_ALLOWANCE',
                 'description' => 'Elderly Allowance for employees 55 years and older',
-                'value_usd' => 75.00,
-                'value_zwg' => 75.00, // Can be adjusted based on exchange rate policy
+                'credit_amount' => 75.00,
+                'currency' => 'USD',
+                'period' => 'monthly',
                 'is_active' => true,
-                'is_percentage' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => \Illuminate\Support\Str::uuid(),
+                'credit_name' => 'ELDERLY_ALLOWANCE',
+                'description' => 'Elderly Allowance for employees 55 years and older',
+                'credit_amount' => 75.00,
+                'currency' => 'ZWG',
+                'period' => 'monthly',
+                'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

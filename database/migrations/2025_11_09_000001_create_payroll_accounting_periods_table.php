@@ -27,7 +27,7 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             // Indexes
-            $table->index(['payroll_id', 'period_year', 'month_name']);
+            $table->index(['payroll_id', 'period_year', 'month_name'], 'payroll_period_lookup');
             $table->index('period_start');
             $table->index('period_end');
         });

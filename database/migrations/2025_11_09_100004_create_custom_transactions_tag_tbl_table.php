@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('custom_transactions_tag_tbl', function (Blueprint $table) {
             $table->id('tag_id');
             $table->unsignedBigInteger('custom_id');
-            $table->unsignedBigInteger('code_id');
+            $table->uuid('code_id');
             $table->timestamps();
 
             // Foreign keys
@@ -24,7 +24,7 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->foreign('code_id')
-                ->references('code_id')
+                ->references('id')
                 ->on('transaction_codes')
                 ->onDelete('cascade');
 

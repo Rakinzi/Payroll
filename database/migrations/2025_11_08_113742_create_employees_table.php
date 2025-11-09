@@ -94,18 +94,16 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Foreign keys
+            // Foreign keys - cost_centers already exists, others will be added in a later migration
             $table->foreign('center_id')->references('id')->on('cost_centers')->onDelete('cascade');
-            $table->foreign('department_id')->references('id')->on('departments')->onDelete('set null');
-            $table->foreign('position_id')->references('id')->on('positions')->onDelete('set null');
-            $table->foreign('occupation_id')->references('id')->on('occupations')->onDelete('set null');
-            $table->foreign('paypoint_id')->references('id')->on('paypoints')->onDelete('set null');
-            $table->foreign('nec_grade_id')->references('id')->on('nec_grades')->onDelete('set null');
 
             // Indexes
             $table->index('center_id');
             $table->index('department_id');
             $table->index('position_id');
+            $table->index('occupation_id');
+            $table->index('paypoint_id');
+            $table->index('nec_grade_id');
             $table->index('is_active');
             $table->index('is_ex');
             $table->index('employment_status');

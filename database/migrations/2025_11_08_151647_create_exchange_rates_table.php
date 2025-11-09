@@ -27,7 +27,7 @@ return new class extends Migration
             $table->index('is_active');
 
             // Unique constraint: only one active rate per currency pair per date
-            $table->unique(['from_currency', 'to_currency', 'effective_date', 'deleted_at']);
+            $table->unique(['from_currency', 'to_currency', 'effective_date', 'deleted_at'], 'exchange_rates_unique_rate');
         });
     }
 

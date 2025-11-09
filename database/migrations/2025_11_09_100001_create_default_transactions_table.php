@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('default_transactions', function (Blueprint $table) {
             $table->id('default_id');
-            $table->unsignedBigInteger('code_id');
+            $table->uuid('code_id');
             $table->unsignedBigInteger('period_id');
             $table->uuid('center_id');
             $table->enum('transaction_effect', ['+', '-']);
@@ -25,7 +25,7 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('code_id')
-                ->references('code_id')
+                ->references('id')
                 ->on('transaction_codes')
                 ->onDelete('cascade');
 

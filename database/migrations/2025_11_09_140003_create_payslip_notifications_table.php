@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('notification_id');
             $table->uuid('payslip_id');
             $table->uuid('employee_id');
-            $table->unsignedBigInteger('sent_by');
+            $table->uuid('sent_by');
             $table->enum('channel', ['email', 'sms', 'whatsapp']);
             $table->string('recipient'); // phone number or email
             $table->text('message')->nullable();

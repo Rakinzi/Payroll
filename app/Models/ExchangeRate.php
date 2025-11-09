@@ -32,7 +32,6 @@ class ExchangeRate extends Model
      */
     const CURRENCY_USD = 'USD';
     const CURRENCY_ZWG = 'ZWG';
-    const CURRENCY_ZWG = 'ZWG';
     const CURRENCY_RTGS = 'RTGS';
 
     /**

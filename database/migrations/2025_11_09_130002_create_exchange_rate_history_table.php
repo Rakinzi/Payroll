@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('rate', 15, 4);
             $table->decimal('previous_rate', 15, 4)->nullable();
             $table->string('source', 50)->default('manual'); // manual, api, system
-            $table->unsignedBigInteger('updated_by')->nullable(); // User ID
+            $table->uuid('updated_by')->nullable(); // User ID
             $table->text('notes')->nullable();
             $table->timestamp('effective_date');
             $table->timestamps();

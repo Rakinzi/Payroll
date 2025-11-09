@@ -54,7 +54,7 @@ return new class extends Migration
 
         // Add indexes for performance
         Schema::table('payslip_transactions', function (Blueprint $table) {
-            $table->index(['payslip_id', 'transaction_type']);
+            // Note: ['payslip_id', 'transaction_type'] index already exists in base migration
             $table->index(['payslip_id', 'is_manual']);
             $table->index('calculation_basis');
         });
@@ -67,7 +67,6 @@ return new class extends Migration
     {
         Schema::table('payslip_transactions', function (Blueprint $table) {
             // Drop indexes first
-            $table->dropIndex(['payslip_id', 'transaction_type']);
             $table->dropIndex(['payslip_id', 'is_manual']);
             $table->dropIndex(['calculation_basis']);
 

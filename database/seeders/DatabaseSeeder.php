@@ -39,10 +39,8 @@ class DatabaseSeeder extends Seeder
         $this->command->newLine();
         $this->command->info('Running tenant migrations and seeding...');
 
-        $this->command->call('tenants:migrate-fresh', [
-            '--force' => true,
-            '--seed' => true,
-        ]);
+        $this->command->call('tenants:migrate-fresh');
+        $this->command->call('tenants:seed');
 
         $this->command->newLine();
         $this->command->info('✓ All databases migrated and seeded successfully!');

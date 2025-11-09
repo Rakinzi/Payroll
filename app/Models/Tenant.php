@@ -21,14 +21,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     ];
 
     /**
-     * Get the database name for this tenant.
-     */
-    public function database(): string
-    {
-        return $this->tenancy_db_name;
-    }
-
-    /**
      * Get tenant's system name.
      */
     public function getSystemNameAttribute(): string
@@ -42,18 +34,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function getLogoAttribute(): ?string
     {
         return $this->data['logo'] ?? null;
-    }
-
-    /**
-     * Set custom database name for the tenant.
-     *
-     * @param string $database
-     * @return $this
-     */
-    public function withDatabase(string $database): self
-    {
-        $this->tenancy_db_name = $database;
-        return $this;
     }
 
     /**

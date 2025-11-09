@@ -25,11 +25,10 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            // Foreign keys
-            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');
-            $table->foreign('center_id')->references('id')->on('cost_centers')->onDelete('cascade');
+            // Foreign keys will be added in a later migration after dependent tables exist
 
             // Indexes
+            $table->index('employee_id');
             $table->index('center_id');
             $table->index('is_active');
         });

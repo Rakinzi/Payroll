@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('user_profiles', function (Blueprint $table) {
             $table->id('profile_id');
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('user_id');
             $table->string('avatar_path')->nullable();
             $table->string('signature_path')->nullable();
             $table->json('preferences')->nullable();
