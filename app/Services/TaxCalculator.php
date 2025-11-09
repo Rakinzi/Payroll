@@ -86,6 +86,14 @@ class TaxCalculator
             $applicableCredits['DISABILITY_ALLOWANCE'] = $this->taxCredits['DISABILITY_ALLOWANCE'];
         }
 
+        // Elderly allowance (automatically applies for employees 55+ years old)
+        if ($employee->date_of_birth && isset($this->taxCredits['ELDERLY_ALLOWANCE'])) {
+            $age = \Carbon\Carbon::parse($employee->date_of_birth)->age;
+            if ($age >= 55) {
+                $applicableCredits['ELDERLY_ALLOWANCE'] = $this->taxCredits['ELDERLY_ALLOWANCE'];
+            }
+        }
+
         // Blind person allowance (if we add this field to employees)
         // if (($employee->is_blind ?? false) && isset($this->taxCredits['BLIND_ALLOWANCE'])) {
         //     $applicableCredits['BLIND_ALLOWANCE'] = $this->taxCredits['BLIND_ALLOWANCE'];
