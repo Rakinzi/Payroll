@@ -20,7 +20,7 @@ class LoginController extends Controller
     {
         $costCenters = CostCenter::active()->get(['id', 'center_name']);
 
-        return Inertia::render('Auth/Login', [
+        return Inertia::render('auth/login', [
             'costCenters' => $costCenters,
         ]);
     }

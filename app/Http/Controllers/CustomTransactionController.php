@@ -53,7 +53,7 @@ class CustomTransactionController extends Controller
 
         $transactionCodes = TransactionCode::orderBy('code_number')->get();
 
-        return Inertia::render('Payroll/CustomTransactions/Index', [
+        return Inertia::render('payroll/custom-transactions/index', [
             'transactions' => $transactions,
             'payrolls' => $payrolls,
             'periods' => $periods,

@@ -18,7 +18,7 @@ return [
      */
     'central_domains' => [
         '127.0.0.1',
-        'localhost',
+        // 'localhost', // Commented out to allow localhost as tenant domain for local development
     ],
 
     /**

@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
+import { register, login } from '@/routes';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
 
@@ -46,7 +45,7 @@ export default function Login({
                     <div className="flex flex-1 items-center justify-center">
                         <div className="w-full max-w-md">
                             <Form
-                                {...store.form()}
+                                {...login.form()}
                                 resetOnSuccess={['password']}
                                 className="flex flex-col gap-6"
                             >

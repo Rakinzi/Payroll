@@ -19,7 +19,7 @@ class TenantSeeder extends Seeder
             [
                 'id' => 'local',
                 'database' => 'lorimakp_lorimak_v1',
-                'domain' => 'localhost',
+                'domain' => 'local.localhost',
                 'system_name' => 'Lorimak',
                 'logo' => null,
             ],

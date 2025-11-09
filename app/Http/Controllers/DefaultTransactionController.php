@@ -20,7 +20,7 @@ class DefaultTransactionController extends Controller
         $currentPeriod = AccountingPeriod::current()->first();
 
         if (!$currentPeriod) {
-            return Inertia::render('Payroll/DefaultTransactions/Index', [
+            return Inertia::render('payroll/default-transactions/index', [
                 'currentPeriod' => null,
                 'transactions' => [],
                 'transactionCodes' => [],

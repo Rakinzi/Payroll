@@ -27,7 +27,7 @@ class ProfileController extends Controller
         $departments = Department::where('center_id', $user->center_id)->get();
         $positions = WorkPosition::all();
 
-        return Inertia::render('Settings/Profile/Edit', [
+        return Inertia::render('settings/profile-edit/edit', [
             'profile' => [
                 'profile_id' => $profile->profile_id,
                 'user_id' => $profile->user_id,

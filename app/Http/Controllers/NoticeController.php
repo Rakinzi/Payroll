@@ -47,7 +47,7 @@ class NoticeController extends Controller
             ];
         });
 
-        return Inertia::render('Notices/Index', [
+        return Inertia::render('notices/index', [
             'notices' => $notices,
             'filters' => $request->only(['search']),
             'maxFileSize' => Notice::getMaxFileSize(),

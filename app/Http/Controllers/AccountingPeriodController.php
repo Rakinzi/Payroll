@@ -60,7 +60,7 @@ class AccountingPeriodController extends Controller
         // Get cost centers for admin view
         $costCenters = CostCenter::active()->get();
 
-        return Inertia::render('Payroll/Periods/Index', [
+        return Inertia::render('payroll/periods/index', [
             'periods' => $periods,
             'payrolls' => $payrolls,
             'currentPayrollId' => $payrollId,
@@ -78,7 +78,7 @@ class AccountingPeriodController extends Controller
     {
         $period->load(['centerStatuses.center', 'payroll', 'payslips.employee']);
 
-        return Inertia::render('Payroll/Periods/Show', [
+        return Inertia::render('payroll/periods/show', [
             'period' => $period,
         ]);
     }

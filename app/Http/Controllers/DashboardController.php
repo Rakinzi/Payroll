@@ -19,7 +19,7 @@ class DashboardController extends Controller
         // Get statistics based on user's access
         $stats = $this->getDashboardStats($user);
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('dashboard', [
             'stats' => $stats,
         ]);
     }

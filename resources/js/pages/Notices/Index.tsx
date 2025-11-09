@@ -47,7 +47,6 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Props {
     notices: PaginatedData<Notice>;
-    };
     filters: {
         search?: string;
     };

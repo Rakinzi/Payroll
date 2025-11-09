@@ -63,7 +63,7 @@ class CurrencyController extends Controller
                                ];
                            });
 
-        return Inertia::render('Settings/Currencies/Index', [
+        return Inertia::render('settings/currencies/index', [
             'currencies' => $currencies,
             'filters' => $request->only(['search', 'status']),
         ]);

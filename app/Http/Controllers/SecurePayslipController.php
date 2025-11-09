@@ -24,14 +24,14 @@ class SecurePayslipController extends Controller
         $link = PayslipDownloadLink::findByToken($token);
 
         if (!$link) {
-            return Inertia::render('Payslips/SecureDownload/NotFound', [
+            return Inertia::render('payslips/secure-download/not-found', [
                 'error' => 'Invalid download link',
             ]);
         }
 
         if (!$link->isValid()) {
             $reason = $link->isExpired() ? 'expired' : 'already used';
-            return Inertia::render('Payslips/SecureDownload/Expired', [
+            return Inertia::render('payslips/secure-download/expired', [
                 'error' => "This download link has {$reason}",
                 'expiry_display' => $link->getExpiryDisplay(),
             ]);
@@ -39,7 +39,7 @@ class SecurePayslipController extends Controller
 
         $link->load(['payslip:id,payslip_number,period_month,period_year', 'employee:id,firstname,surname']);
 
-        return Inertia::render('Payslips/SecureDownload/PasswordForm', [
+        return Inertia::render('payslips/secure-download/password-form', [
             'token' => $token,
             'payslip' => [
                 'payslip_number' => $link->payslip->payslip_number,
