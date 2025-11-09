@@ -59,9 +59,16 @@ export function VehicleBenefitBandsTab() {
     const bands = useVehicleBenefitBands();
     const { openCreate, openEdit } = useVehicleBenefitBandDialog();
     const deleteMutation = useDeleteOrganizationalItem('vehicle benefit band', '/api/vehicle-benefit-bands');
+    const dialog = useDialog();
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this vehicle benefit band?')) {
+    const handleDelete = async (id: string) => {
+        const confirmed = await dialog.confirm('Are you sure you want to delete this vehicle benefit band?', {
+            title: 'Confirm Deletion',
+            confirmText: 'Delete',
+            variant: 'destructive',
+        });
+
+        if (confirmed) {
             deleteMutation.mutate(id);
         }
     };

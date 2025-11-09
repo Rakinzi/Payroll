@@ -73,6 +73,7 @@ export default function Index({ auth, currencies, filters }: CurrenciesIndexProp
     const deleteMutation = useDeleteCurrency();
     const toggleStatusMutation = useToggleCurrencyStatus();
     const setBaseMutation = useSetBaseCurrency();
+    const dialog = useDialog();
 
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
@@ -219,8 +220,16 @@ export default function Index({ auth, currencies, filters }: CurrenciesIndexProp
     };
 
     // Handle set as base
-    const handleSetAsBase = (currency: Currency) => {
-        if (confirm(`Are you sure you want to set ${currency.code} as the base currency?`)) {
+    const handleSetAsBase = async (currency: Currency) => {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to set ${currency.code} as the base currency?`,
+            {
+                title: 'Confirm Base Currency Change',
+                confirmText: 'Set as Base',
+            }
+        );
+
+        if (confirmed) {
             setBaseMutation.mutate(currency.currency_id);
         }
     };
@@ -233,8 +242,16 @@ export default function Index({ auth, currencies, filters }: CurrenciesIndexProp
     };
 
     // Handle update all from API
-    const handleUpdateAllFromApi = () => {
-        if (confirm('Update all currency exchange rates from API?')) {
+    const handleUpdateAllFromApi = async () => {
+        const confirmed = await dialog.confirm(
+            'Update all currency exchange rates from API?',
+            {
+                title: 'Confirm Update',
+                confirmText: 'Update All',
+            }
+        );
+
+        if (confirmed) {
             router.post(route('settings.currencies.update-all-from-api'), {}, {
                 preserveState: true,
             });
