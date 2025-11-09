@@ -466,6 +466,22 @@ Route::middleware([
             Route::put('/bank-details', [\App\Http\Controllers\ProfileController::class, 'updateBankDetails'])->name('bank-details');
         });
 
+        // Currency Management Routes
+        Route::prefix('settings/currencies')->name('settings.currencies.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\CurrencyController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\CurrencyController::class, 'store'])->name('store')->middleware('can:create,App\Models\Currency');
+            Route::get('/{currency}', [\App\Http\Controllers\CurrencyController::class, 'show'])->name('show');
+            Route::put('/{currency}', [\App\Http\Controllers\CurrencyController::class, 'update'])->name('update');
+            Route::delete('/{currency}', [\App\Http\Controllers\CurrencyController::class, 'destroy'])->name('destroy');
+
+            // AJAX endpoints
+            Route::post('/{currency}/toggle-status', [\App\Http\Controllers\CurrencyController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{currency}/set-base', [\App\Http\Controllers\CurrencyController::class, 'setAsBase'])->name('set-base');
+            Route::get('/active/all', [\App\Http\Controllers\CurrencyController::class, 'getActive'])->name('active');
+            Route::post('/exchange-rate', [\App\Http\Controllers\CurrencyController::class, 'getExchangeRate'])->name('exchange-rate');
+            Route::post('/convert', [\App\Http\Controllers\CurrencyController::class, 'convert'])->name('convert');
+        });
+
         // Spreadsheet Import/Export Routes (Admin only)
         Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
