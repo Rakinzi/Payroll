@@ -2,7 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { useDialog } from '@/hooks/use-dialog';
 import { useState } from 'react';
 import { create } from 'zustand';
-import AppLayout from '@/components/layouts/app-layout';
+import AppLayout from '@/layouts/app-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

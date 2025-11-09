@@ -58,7 +58,7 @@ Route::middleware([
     // Authentication Routes (override Fortify default login)
     Route::middleware('guest')->group(function () {
         Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [LoginController::class, 'login']);
+        Route::post('login', [LoginController::class, 'login'])->name('login.store');
     });
 
     Route::post('logout', [LoginController::class, 'logout'])

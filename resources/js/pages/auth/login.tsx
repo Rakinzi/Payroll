@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { register, login } from '@/routes';
+import { register } from '@/routes';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
 
@@ -45,11 +44,12 @@ export default function Login({
                     <div className="flex flex-1 items-center justify-center">
                         <div className="w-full max-w-md">
                             <Form
-                                {...login.form()}
+                                action="/login"
+                                method="post"
                                 resetOnSuccess={['password']}
                                 className="flex flex-col gap-6"
                             >
-                                {({ processing, errors, data, setData }) => (
+                                {({ processing, errors }) => (
                                     <>
                                         <div className="flex flex-col gap-1 text-center">
                                             <h1 className="text-2xl font-bold">Log in to your account</h1>
@@ -108,23 +108,18 @@ export default function Login({
                                             {costCenters && costCenters.length > 0 && (
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="center_id">Cost Center</Label>
-                                                    <Select
+                                                    <select
+                                                        id="center_id"
                                                         name="center_id"
-                                                        value={data.center_id || ''}
-                                                        onValueChange={(value) => setData('center_id', value)}
+                                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                                     >
-                                                        <SelectTrigger id="center_id">
-                                                            <SelectValue placeholder="Select a cost center (or leave empty for super admin)" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="">Super Admin Login</SelectItem>
-                                                            {costCenters.map((center) => (
-                                                                <SelectItem key={center.id} value={center.id}>
-                                                                    {center.center_name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                        <option value="">Super Admin Login</option>
+                                                        {costCenters.map((center) => (
+                                                            <option key={center.id} value={center.id}>
+                                                                {center.center_name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                     <InputError message={errors.center_id} />
                                                     <p className="text-xs text-muted-foreground">
                                                         Leave empty to log in as super admin
