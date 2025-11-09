@@ -480,6 +480,15 @@ Route::middleware([
             Route::get('/active/all', [\App\Http\Controllers\CurrencyController::class, 'getActive'])->name('active');
             Route::post('/exchange-rate', [\App\Http\Controllers\CurrencyController::class, 'getExchangeRate'])->name('exchange-rate');
             Route::post('/convert', [\App\Http\Controllers\CurrencyController::class, 'convert'])->name('convert');
+
+            // Exchange rate history
+            Route::get('/{currency}/history', [\App\Http\Controllers\CurrencyController::class, 'getHistory'])->name('history');
+            Route::post('/{currency}/rate-at-date', [\App\Http\Controllers\CurrencyController::class, 'getRateAtDate'])->name('rate-at-date');
+
+            // API updates
+            Route::post('/{currency}/update-from-api', [\App\Http\Controllers\CurrencyController::class, 'updateFromApi'])->name('update-from-api');
+            Route::post('/update-all-from-api', [\App\Http\Controllers\CurrencyController::class, 'updateAllFromApi'])->name('update-all-from-api');
+            Route::get('/supported', [\App\Http\Controllers\CurrencyController::class, 'getSupportedCurrencies'])->name('supported');
         });
 
         // Spreadsheet Import/Export Routes (Admin only)
@@ -546,7 +555,18 @@ Route::middleware([
 
                 // Delete payslip
                 Route::delete('/{payslip}', [PayslipController::class, 'destroy'])->name('destroy');
+
+                // Multi-channel distribution
+                Route::post('/{payslip}/send-multi-channel', [PayslipController::class, 'sendMultiChannel'])->name('send-multi-channel');
+                Route::get('/{payslip}/notification-stats', [PayslipController::class, 'getNotificationStats'])->name('notification-stats');
             });
+        });
+
+        // Secure Payslip Download Routes (Public - no auth required)
+        Route::prefix('payslip-download')->name('payslips.secure-')->group(function () {
+            Route::get('/{token}', [\App\Http\Controllers\SecurePayslipController::class, 'showPasswordForm'])->name('password-form');
+            Route::post('/{token}/download', [\App\Http\Controllers\SecurePayslipController::class, 'download'])->name('download');
+            Route::post('/resend', [\App\Http\Controllers\SecurePayslipController::class, 'resendLink'])->name('resend');
         });
 
         // Reports Management Routes (Admin only)

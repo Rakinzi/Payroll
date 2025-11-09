@@ -5,6 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Building2, Users, UserX, UserCog } from 'lucide-react';
 import NoticesWidget from '@/components/notices-widget';
+import CurrencyConverter from '@/components/currency-converter';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -174,8 +175,18 @@ export default function Dashboard({ stats }: DashboardProps) {
                     )}
                 </div>
 
-                {/* Notices Widget */}
-                <NoticesWidget limit={5} />
+                {/* Currency Converter and Notices */}
+                <div className="grid gap-4 lg:grid-cols-3">
+                    {/* Currency Converter Widget */}
+                    <div className="lg:col-span-1">
+                        <CurrencyConverter />
+                    </div>
+
+                    {/* Notices Widget */}
+                    <div className="lg:col-span-2">
+                        <NoticesWidget limit={5} />
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );
