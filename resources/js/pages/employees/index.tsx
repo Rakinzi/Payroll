@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import {
     type Employee,
-    use DeleteEmployee,
+    useDeleteEmployee,
     useRestoreEmployee,
     useTerminateEmployee,
 } from '@/hooks/queries/use-employees';
