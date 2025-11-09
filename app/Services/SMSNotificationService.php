@@ -9,12 +9,14 @@ use Illuminate\Support\Facades\Config;
 class SMSNotificationService
 {
     protected string $provider;
+    /** @var array<string, mixed> */
     protected array $config;
 
     public function __construct()
     {
-        $this->provider = config('sms.default_provider', 'twilio');
-        $this->config = config("sms.providers.{$this->provider}", []);
+        $this->provider = (string) config('sms.default_provider', 'twilio');
+        $configData = config("sms.providers.{$this->provider}");
+        $this->config = is_array($configData) ? $configData : [];
     }
 
     /**
@@ -22,7 +24,7 @@ class SMSNotificationService
      *
      * @param string $phoneNumber Phone number in international format (e.g., +263771234567)
      * @param string $message Message content
-     * @return array ['success' => bool, 'message_id' => string|null, 'error' => string|null]
+     * @return array{success: bool, message_id: string|null, error: string|null}
      */
     public function send(string $phoneNumber, string $message): array
     {
@@ -65,6 +67,8 @@ class SMSNotificationService
 
     /**
      * Send SMS via Twilio
+     *
+     * @return array{success: bool, message_id: string|null, error: string|null}
      */
     protected function sendViaTwilio(string $phoneNumber, string $message): array
     {
@@ -77,7 +81,7 @@ class SMSNotificationService
         }
 
         $response = Http::asForm()
-            ->withBasicAuth($accountSid, $authToken)
+            ->withBasicAuth((string) $accountSid, (string) $authToken)
             ->post("https://api.twilio.com/2010-04-01/Accounts/{$accountSid}/Messages.json", [
                 'From' => $fromNumber,
                 'To' => $phoneNumber,
@@ -86,22 +90,30 @@ class SMSNotificationService
 
         if ($response->successful()) {
             $data = $response->json();
+            $messageSid = is_array($data) && isset($data['sid']) ? (string) $data['sid'] : null;
             return [
                 'success' => true,
-                'message_id' => $data['sid'] ?? null,
+                'message_id' => $messageSid,
                 'error' => null,
             ];
         }
 
+        $errorData = $response->json();
+        $errorMessage = is_array($errorData) && isset($errorData['message'])
+            ? (string) $errorData['message']
+            : 'Failed to send SMS via Twilio';
+
         return [
             'success' => false,
             'message_id' => null,
-            'error' => $response->json()['message'] ?? 'Failed to send SMS via Twilio',
+            'error' => $errorMessage,
         ];
     }
 
     /**
      * Send SMS via Africa's Talking
+     *
+     * @return array{success: bool, message_id: string|null, error: string|null}
      */
     protected function sendViaAfricasTalking(string $phoneNumber, string $message): array
     {
@@ -114,7 +126,7 @@ class SMSNotificationService
         }
 
         $response = Http::withHeaders([
-            'apiKey' => $apiKey,
+            'apiKey' => (string) $apiKey,
             'Content-Type' => 'application/x-www-form-urlencoded',
             'Accept' => 'application/json',
         ])->asForm()->post('https://api.africastalking.com/version1/messaging', [
@@ -127,21 +139,26 @@ class SMSNotificationService
         if ($response->successful()) {
             $data = $response->json();
 
-            if (isset($data['SMSMessageData']['Recipients'][0])) {
+            if (is_array($data) && isset($data['SMSMessageData']['Recipients'][0])) {
                 $recipient = $data['SMSMessageData']['Recipients'][0];
 
-                if ($recipient['status'] === 'Success') {
+                if (is_array($recipient) && isset($recipient['status']) && $recipient['status'] === 'Success') {
+                    $messageId = isset($recipient['messageId']) ? (string) $recipient['messageId'] : null;
                     return [
                         'success' => true,
-                        'message_id' => $recipient['messageId'] ?? null,
+                        'message_id' => $messageId,
                         'error' => null,
                     ];
                 }
 
+                $errorStatus = is_array($recipient) && isset($recipient['status'])
+                    ? (string) $recipient['status']
+                    : 'Unknown error';
+
                 return [
                     'success' => false,
                     'message_id' => null,
-                    'error' => $recipient['status'] ?? 'Unknown error',
+                    'error' => $errorStatus,
                 ];
             }
         }
@@ -155,6 +172,8 @@ class SMSNotificationService
 
     /**
      * Send SMS via Log (for testing)
+     *
+     * @return array{success: bool, message_id: string|null, error: string|null}
      */
     protected function sendViaLog(string $phoneNumber, string $message): array
     {
@@ -176,7 +195,7 @@ class SMSNotificationService
     protected function normalizePhoneNumber(string $phoneNumber): string
     {
         // Remove all non-numeric characters
-        $phoneNumber = preg_replace('/[^0-9+]/', '', $phoneNumber);
+        $phoneNumber = (string) preg_replace('/[^0-9+]/', '', $phoneNumber);
 
         // If number starts with 0, replace with country code (Zimbabwe = +263)
         if (str_starts_with($phoneNumber, '0')) {
@@ -203,16 +222,16 @@ class SMSNotificationService
     /**
      * Send bulk SMS to multiple recipients
      *
-     * @param array $recipients Array of ['phone' => string, 'message' => string]
-     * @return array Results for each recipient
+     * @param array<int, array{phone: string, message: string}> $recipients Array of recipients
+     * @return array<int, array{phone: string, success: bool, message_id?: string|null, error?: string|null}>
      */
     public function sendBulk(array $recipients): array
     {
         $results = [];
 
         foreach ($recipients as $recipient) {
-            $phone = $recipient['phone'] ?? '';
-            $message = $recipient['message'] ?? '';
+            $phone = $recipient['phone'];
+            $message = $recipient['message'];
 
             if (empty($phone) || empty($message)) {
                 $results[] = [

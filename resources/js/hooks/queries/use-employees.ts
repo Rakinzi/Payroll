@@ -1,5 +1,13 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from '@inertiajs/react';
+import type {
+    Department,
+    Position,
+    Occupation,
+    Paypoint,
+    CostCenter,
+    NecGrade,
+} from '@/types';
 
 export interface Employee {
     id: string;
@@ -59,12 +67,12 @@ export interface Employee {
     employment_status?: string;
     discharge_notes?: string;
     // Relationships
-    department?: any;
-    position?: any;
-    occupation?: any;
-    paypoint?: any;
-    cost_center?: any;
-    nec_grade?: any;
+    department?: Department;
+    position?: Position;
+    occupation?: Occupation;
+    paypoint?: Paypoint;
+    cost_center?: CostCenter;
+    nec_grade?: NecGrade;
     // Timestamps
     created_at: string;
     updated_at: string;

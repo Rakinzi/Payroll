@@ -6,16 +6,19 @@ use App\Models\Currency;
 use App\Models\ExchangeRateHistory;
 use App\Services\CurrencyExchangeService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CurrencyController extends Controller
 {
     /**
      * Display a listing of currencies.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $query = Currency::query();
 
@@ -42,6 +45,7 @@ class CurrencyController extends Controller
                            ->orderBy('code')
                            ->paginate(15)
                            ->through(function ($currency) {
+                               /** @var Currency $currency */
                                return [
                                    'currency_id' => $currency->currency_id,
                                    'code' => $currency->code,
@@ -68,7 +72,7 @@ class CurrencyController extends Controller
     /**
      * Store a newly created currency.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'code' => 'required|string|max:10|unique:currencies,code',
@@ -81,13 +85,13 @@ class CurrencyController extends Controller
 
         try {
             Currency::create([
-                'code' => strtoupper($request->code),
-                'name' => $request->name,
-                'symbol' => $request->symbol,
-                'exchange_rate' => $request->exchange_rate,
+                'code' => strtoupper((string) $request->code),
+                'name' => (string) $request->name,
+                'symbol' => (string) $request->symbol,
+                'exchange_rate' => (float) $request->exchange_rate,
                 'is_base' => false,
                 'is_active' => true,
-                'decimal_places' => $request->decimal_places,
+                'decimal_places' => (int) $request->decimal_places,
                 'description' => $request->description,
             ]);
 
@@ -104,7 +108,7 @@ class CurrencyController extends Controller
     /**
      * Display the specified currency.
      */
-    public function show(Currency $currency)
+    public function show(Currency $currency): JsonResponse
     {
         return response()->json([
             'currency' => [
@@ -127,7 +131,7 @@ class CurrencyController extends Controller
     /**
      * Update the specified currency.
      */
-    public function update(Request $request, Currency $currency)
+    public function update(Request $request, Currency $currency): RedirectResponse
     {
         $this->authorize('update', $currency);
 
@@ -146,10 +150,10 @@ class CurrencyController extends Controller
             }
 
             $currency->update([
-                'name' => $request->name,
-                'symbol' => $request->symbol,
-                'exchange_rate' => $request->exchange_rate,
-                'decimal_places' => $request->decimal_places,
+                'name' => (string) $request->name,
+                'symbol' => (string) $request->symbol,
+                'exchange_rate' => (float) $request->exchange_rate,
+                'decimal_places' => (int) $request->decimal_places,
                 'description' => $request->description,
             ]);
 
@@ -166,7 +170,7 @@ class CurrencyController extends Controller
     /**
      * Remove the specified currency.
      */
-    public function destroy(Currency $currency)
+    public function destroy(Currency $currency): RedirectResponse
     {
         $this->authorize('delete', $currency);
 
@@ -192,7 +196,7 @@ class CurrencyController extends Controller
     /**
      * Toggle currency active status.
      */
-    public function toggleStatus(Currency $currency)
+    public function toggleStatus(Currency $currency): RedirectResponse
     {
         $this->authorize('update', $currency);
 
@@ -222,7 +226,7 @@ class CurrencyController extends Controller
     /**
      * Set currency as base currency.
      */
-    public function setAsBase(Currency $currency)
+    public function setAsBase(Currency $currency): RedirectResponse
     {
         $this->authorize('update', $currency);
 
@@ -242,12 +246,13 @@ class CurrencyController extends Controller
     /**
      * Get all active currencies.
      */
-    public function getActive()
+    public function getActive(): JsonResponse
     {
         $currencies = Currency::getActiveCurrencies();
 
         return response()->json([
             'currencies' => $currencies->map(function ($currency) {
+                /** @var Currency $currency */
                 return [
                     'currency_id' => $currency->currency_id,
                     'code' => $currency->code,
@@ -262,7 +267,7 @@ class CurrencyController extends Controller
     /**
      * Get exchange rate between two currencies.
      */
-    public function getExchangeRate(Request $request)
+    public function getExchangeRate(Request $request): JsonResponse
     {
         $request->validate([
             'from' => 'required|string|exists:currencies,code',
@@ -270,7 +275,7 @@ class CurrencyController extends Controller
         ]);
 
         try {
-            $rate = Currency::getExchangeRate($request->from, $request->to);
+            $rate = Currency::getExchangeRate((string) $request->from, (string) $request->to);
 
             return response()->json([
                 'from' => $request->from,
@@ -287,7 +292,7 @@ class CurrencyController extends Controller
     /**
      * Convert amount between currencies.
      */
-    public function convert(Request $request)
+    public function convert(Request $request): JsonResponse
     {
         $request->validate([
             'amount' => 'required|numeric|min:0',
@@ -296,7 +301,7 @@ class CurrencyController extends Controller
         ]);
 
         try {
-            $convertedAmount = Currency::convert($request->amount, $request->from, $request->to);
+            $convertedAmount = Currency::convert((float) $request->amount, (string) $request->from, (string) $request->to);
 
             return response()->json([
                 'original_amount' => $request->amount,
@@ -314,7 +319,7 @@ class CurrencyController extends Controller
     /**
      * Get exchange rate history for a currency.
      */
-    public function getHistory(Currency $currency)
+    public function getHistory(Currency $currency): JsonResponse
     {
         $history = ExchangeRateHistory::forCurrency($currency->currency_id)
             ->with('updatedBy:user_id,firstname,surname')
@@ -329,18 +334,19 @@ class CurrencyController extends Controller
                 'display_name' => $currency->display_name,
             ],
             'history' => $history->through(function ($record) {
+                /** @var ExchangeRateHistory $record */
                 return [
                     'history_id' => $record->history_id,
                     'rate' => $record->rate,
-                    'formatted_rate' => number_format($record->rate, 4),
+                    'formatted_rate' => number_format((float) $record->rate, 4),
                     'previous_rate' => $record->previous_rate,
-                    'formatted_previous_rate' => $record->previous_rate ? number_format($record->previous_rate, 4) : null,
-                    'change_amount' => $record->change_amount,
-                    'change_percentage' => $record->change_percentage,
-                    'formatted_change' => $record->formatted_change,
+                    'formatted_previous_rate' => $record->previous_rate ? number_format((float) $record->previous_rate, 4) : null,
+                    'rate_change' => $record->rate_change,
+                    'rate_change_percentage' => $record->rate_change_percentage,
+                    'formatted_change' => $record->rate_change ? number_format($record->rate_change, 4) : null,
                     'source' => $record->source,
                     'source_label' => ucfirst($record->source),
-                    'updated_by' => $record->updatedBy ? $record->updatedBy->firstname . ' ' . $record->updatedBy->surname : null,
+                    'updated_by' => $record->updatedBy?->name,
                     'notes' => $record->notes,
                     'effective_date' => $record->effective_date,
                     'formatted_date' => $record->effective_date->format('Y-m-d H:i:s'),
@@ -352,14 +358,14 @@ class CurrencyController extends Controller
     /**
      * Get exchange rate at a specific date.
      */
-    public function getRateAtDate(Request $request, Currency $currency)
+    public function getRateAtDate(Request $request, Currency $currency): JsonResponse
     {
         $request->validate([
             'date' => 'required|date',
         ]);
 
         try {
-            $rate = ExchangeRateHistory::getRateAtDate($currency->currency_id, $request->date);
+            $rate = ExchangeRateHistory::getRateAtDate($currency->currency_id, (string) $request->date);
 
             if ($rate === null) {
                 return response()->json([
@@ -372,7 +378,7 @@ class CurrencyController extends Controller
                 'currency_code' => $currency->code,
                 'date' => $request->date,
                 'rate' => $rate,
-                'formatted_rate' => number_format($rate, 4),
+                'formatted_rate' => number_format((float) $rate, 4),
             ]);
 
         } catch (\Exception $e) {
@@ -383,13 +389,13 @@ class CurrencyController extends Controller
     /**
      * Update single currency rate from API.
      */
-    public function updateFromApi(Currency $currency)
+    public function updateFromApi(Currency $currency): RedirectResponse
     {
         $this->authorize('update', $currency);
 
         try {
             $service = new CurrencyExchangeService();
-            $result = $service->updateCurrencyRate($currency, Auth::id());
+            $result = $service->updateCurrencyRate($currency, (int) Auth::id());
 
             if ($result['success']) {
                 Log::info("Currency rate updated from API by user " . Auth::id() . ": {$currency->code}");
@@ -407,7 +413,7 @@ class CurrencyController extends Controller
     /**
      * Update all currency rates from API.
      */
-    public function updateAllFromApi()
+    public function updateAllFromApi(): RedirectResponse
     {
         $this->authorize('create', Currency::class);
 
@@ -436,7 +442,7 @@ class CurrencyController extends Controller
     /**
      * Get supported currencies from API.
      */
-    public function getSupportedCurrencies()
+    public function getSupportedCurrencies(): JsonResponse
     {
         try {
             $service = new CurrencyExchangeService();

@@ -4,7 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @property int $history_id
+ * @property int $currency_id
+ * @property string $rate
+ * @property string $previous_rate
+ * @property string $source
+ * @property int|null $updated_by
+ * @property string|null $notes
+ * @property \Carbon\Carbon $effective_date
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property-read float|null $rate_change
+ * @property-read float|null $rate_change_percentage
+ * @property-read Currency $currency
+ * @property-read User|null $updatedBy
+ */
 class ExchangeRateHistory extends Model
 {
     protected $table = 'exchange_rate_history';
@@ -45,7 +62,7 @@ class ExchangeRateHistory extends Model
     // Accessors
     public function getRateChangeAttribute(): ?float
     {
-        if ($this->previous_rate === null) {
+        if (empty($this->previous_rate)) {
             return null;
         }
 
@@ -54,35 +71,59 @@ class ExchangeRateHistory extends Model
 
     public function getRateChangePercentageAttribute(): ?float
     {
-        if ($this->previous_rate === null || $this->previous_rate == 0) {
+        if (empty($this->previous_rate) || (float) $this->previous_rate == 0) {
             return null;
         }
 
-        return (($this->rate - $this->previous_rate) / $this->previous_rate) * 100;
+        $rate = (float) $this->rate;
+        $prevRate = (float) $this->previous_rate;
+        return (($rate - $prevRate) / $prevRate) * 100;
     }
 
     // Scopes
-    public function scopeForCurrency($query, int $currencyId)
+    /**
+     * @param Builder<ExchangeRateHistory> $query
+     * @return Builder<ExchangeRateHistory>
+     */
+    public function scopeForCurrency(Builder $query, int $currencyId): Builder
     {
         return $query->where('currency_id', $currencyId);
     }
 
-    public function scopeManual($query)
+    /**
+     * @param Builder<ExchangeRateHistory> $query
+     * @return Builder<ExchangeRateHistory>
+     */
+    public function scopeManual(Builder $query): Builder
     {
         return $query->where('source', 'manual');
     }
 
-    public function scopeApi($query)
+    /**
+     * @param Builder<ExchangeRateHistory> $query
+     * @return Builder<ExchangeRateHistory>
+     */
+    public function scopeApi(Builder $query): Builder
     {
         return $query->where('source', 'api');
     }
 
-    public function scopeRecent($query, int $days = 30)
+    /**
+     * @param Builder<ExchangeRateHistory> $query
+     * @return Builder<ExchangeRateHistory>
+     */
+    public function scopeRecent(Builder $query, int $days = 30): Builder
     {
         return $query->where('effective_date', '>=', now()->subDays($days));
     }
 
-    public function scopeBetweenDates($query, $startDate, $endDate)
+    /**
+     * @param Builder<ExchangeRateHistory> $query
+     * @param mixed $startDate
+     * @param mixed $endDate
+     * @return Builder<ExchangeRateHistory>
+     */
+    public function scopeBetweenDates(Builder $query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('effective_date', [$startDate, $endDate]);
     }
@@ -107,6 +148,9 @@ class ExchangeRateHistory extends Model
         ]);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, ExchangeRateHistory>
+     */
     public static function getHistoryForCurrency(int $currencyId, int $limit = 10)
     {
         return self::forCurrency($currencyId)
@@ -116,7 +160,10 @@ class ExchangeRateHistory extends Model
             ->get();
     }
 
-    public static function getRateAtDate(int $currencyId, $date)
+    /**
+     * @param mixed $date
+     */
+    public static function getRateAtDate(int $currencyId, $date): ?string
     {
         $history = self::forCurrency($currencyId)
             ->where('effective_date', '<=', $date)

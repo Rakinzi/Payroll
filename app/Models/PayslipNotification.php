@@ -4,8 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 
+/**
+ * @property int $notification_id
+ * @property string $payslip_id
+ * @property string $employee_id
+ * @property int $sent_by
+ * @property string $channel
+ * @property string $recipient
+ * @property string|null $message
+ * @property string $status
+ * @property string|null $error_message
+ * @property string|null $external_id
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $delivered_at
+ * @property Carbon|null $read_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Payslip $payslip
+ * @property-read Employee $employee
+ * @property-read User $sender
+ * @property-read string $status_display
+ * @property-read string $channel_display
+ */
 class PayslipNotification extends Model
 {
     protected $table = 'payslip_notifications';
@@ -155,37 +178,65 @@ class PayslipNotification extends Model
 
     // Scopes
 
-    public function scopeByChannel($query, string $channel)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeByChannel(Builder $query, string $channel): Builder
     {
         return $query->where('channel', $channel);
     }
 
-    public function scopeByStatus($query, string $status)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeByStatus(Builder $query, string $status): Builder
     {
         return $query->where('status', $status);
     }
 
-    public function scopeForPayslip($query, string $payslipId)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeForPayslip(Builder $query, string $payslipId): Builder
     {
         return $query->where('payslip_id', $payslipId);
     }
 
-    public function scopeForEmployee($query, string $employeeId)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeForEmployee(Builder $query, string $employeeId): Builder
     {
         return $query->where('employee_id', $employeeId);
     }
 
-    public function scopeSuccessful($query)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeSuccessful(Builder $query): Builder
     {
         return $query->whereIn('status', ['sent', 'delivered', 'read']);
     }
 
-    public function scopeFailed($query)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopeFailed(Builder $query): Builder
     {
         return $query->where('status', 'failed');
     }
 
-    public function scopePending($query)
+    /**
+     * @param Builder<PayslipNotification> $query
+     * @return Builder<PayslipNotification>
+     */
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('status', 'pending');
     }
@@ -194,6 +245,8 @@ class PayslipNotification extends Model
 
     /**
      * Get statistics for a payslip
+     *
+     * @return array{total: int, email: int, sms: int, whatsapp: int, sent: int, failed: int, pending: int}
      */
     public static function getStatsForPayslip(string $payslipId): array
     {

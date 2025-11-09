@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Payslip;
 use App\Models\PayslipDownloadLink;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class SecurePayslipController extends Controller
 {
     /**
      * Show password verification page for secure download
      */
-    public function showPasswordForm(string $token)
+    public function showPasswordForm(string $token): Response
     {
         $link = PayslipDownloadLink::findByToken($token);
 
@@ -52,7 +56,7 @@ class SecurePayslipController extends Controller
     /**
      * Verify password and download payslip
      */
-    public function download(Request $request, string $token)
+    public function download(Request $request, string $token): HttpResponse|RedirectResponse
     {
         $request->validate([
             'password' => 'required|string',
@@ -93,7 +97,7 @@ class SecurePayslipController extends Controller
     /**
      * Download without password (for admin preview)
      */
-    public function directDownload(Request $request, string $token)
+    public function directDownload(Request $request, string $token): HttpResponse
     {
         // Only allow if user is authenticated and is admin
         if (!auth()->check() || !auth()->user()->hasRole('admin')) {
@@ -114,7 +118,7 @@ class SecurePayslipController extends Controller
     /**
      * Generate PDF for payslip
      */
-    protected function generatePDF(Payslip $payslip)
+    protected function generatePDF(Payslip $payslip): HttpResponse
     {
         $payslip->load([
             'employee:id,emp_system_id,firstname,surname,othername,position_id,department_id',
@@ -127,8 +131,8 @@ class SecurePayslipController extends Controller
         $pdf = Pdf::loadView('payslips.pdf', [
             'payslip' => $payslip,
             'employee' => $payslip->employee,
-            'earnings' => $payslip->transactions()->earnings()->get(),
-            'deductions' => $payslip->transactions()->deductions()->get(),
+            'earnings' => $payslip->transactions->where('type', 'earning'),
+            'deductions' => $payslip->transactions->where('type', 'deduction'),
         ])
         ->setPaper('a4', 'landscape')
         ->setOption('margin-top', 10)
@@ -142,7 +146,7 @@ class SecurePayslipController extends Controller
     /**
      * Resend download link (for employees who lost the link)
      */
-    public function resendLink(Request $request)
+    public function resendLink(Request $request): RedirectResponse
     {
         $request->validate([
             'emp_system_id' => 'required|string',
@@ -165,8 +169,8 @@ class SecurePayslipController extends Controller
         }
 
         // Check if there's an existing valid link
-        $existingLink = PayslipDownloadLink::forPayslip($payslip->id)
-            ->forEmployee($employee->id)
+        $existingLink = PayslipDownloadLink::forPayslip((string) $payslip->id)
+            ->forEmployee((string) $employee->id)
             ->valid()
             ->first();
 
@@ -175,7 +179,7 @@ class SecurePayslipController extends Controller
         }
 
         // Generate new link
-        $link = PayslipDownloadLink::generate($payslip->id, $employee->id, 'resend');
+        $link = PayslipDownloadLink::generate((string) $payslip->id, (string) $employee->id, 'resend');
 
         // Send notification (SMS or email based on preferences)
         $this->sendLinkNotification($employee, $payslip, $link);
@@ -186,7 +190,7 @@ class SecurePayslipController extends Controller
     /**
      * Send download link notification
      */
-    protected function sendLinkNotification($employee, $payslip, $link)
+    protected function sendLinkNotification(Employee $employee, Payslip $payslip, PayslipDownloadLink $link): void
     {
         // This would integrate with your notification system
         // For now, just log

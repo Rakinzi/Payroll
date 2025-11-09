@@ -18,6 +18,8 @@ class CurrencyExchangeService
 
     /**
      * Update all active currency exchange rates from API.
+     *
+     * @return array{success: bool, message?: string, updated?: array<int, array{currency: string, old_rate: float, new_rate: float}>, failed?: array<int, array{currency: string, error: string}>, total_updated?: int, total_failed?: int}
      */
     public function updateAllRates(): array
     {
@@ -31,15 +33,18 @@ class CurrencyExchangeService
         }
 
         $currencies = Currency::active()->where('is_base', false)->get();
+        /** @var array<int, array{currency: string, old_rate: float, new_rate: float}> $updated */
         $updated = [];
+        /** @var array<int, array{currency: string, error: string}> $failed */
         $failed = [];
 
         foreach ($currencies as $currency) {
+            /** @var Currency $currency */
             try {
                 $newRate = $this->fetchExchangeRate($baseCurrency->code, $currency->code);
 
                 if ($newRate) {
-                    $previousRate = $currency->exchange_rate;
+                    $previousRate = (float) $currency->exchange_rate;
 
                     // Update currency
                     $currency->update(['exchange_rate' => $newRate]);
@@ -90,7 +95,8 @@ class CurrencyExchangeService
 
         // Check cache first (valid for 1 hour)
         if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+            $cached = Cache::get($cacheKey);
+            return is_float($cached) ? $cached : null;
         }
 
         try {
@@ -99,7 +105,7 @@ class CurrencyExchangeService
             if ($response->successful()) {
                 $data = $response->json();
 
-                if (isset($data['rates'][$toCode])) {
+                if (is_array($data) && isset($data['rates'][$toCode])) {
                     $rate = (float) $data['rates'][$toCode];
 
                     // Cache for 1 hour
@@ -119,6 +125,8 @@ class CurrencyExchangeService
 
     /**
      * Update single currency rate.
+     *
+     * @return array{success: bool, message?: string, currency?: string, previous_rate?: float, new_rate?: float, change?: float}
      */
     public function updateCurrencyRate(Currency $currency, ?int $userId = null): array
     {
@@ -148,7 +156,7 @@ class CurrencyExchangeService
                 ];
             }
 
-            $previousRate = $currency->exchange_rate;
+            $previousRate = (float) $currency->exchange_rate;
 
             // Update currency
             $currency->update(['exchange_rate' => $newRate]);
@@ -185,6 +193,8 @@ class CurrencyExchangeService
 
     /**
      * Get supported currencies from API.
+     *
+     * @return array<int, string>
      */
     public function getSupportedCurrencies(): array
     {
@@ -196,7 +206,9 @@ class CurrencyExchangeService
 
             if ($response->successful()) {
                 $data = $response->json();
-                return array_keys($data['rates'] ?? []);
+                if (is_array($data) && isset($data['rates']) && is_array($data['rates'])) {
+                    return array_keys($data['rates']);
+                }
             }
 
             return [];
