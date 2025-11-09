@@ -45,7 +45,7 @@ class CompanyBankDetailController extends Controller
             'branch_code' => 'required|string|max:10',
             'account_number' => 'required|string|min:10|max:20',
             'account_type' => 'required|in:Current,Nostro,FCA',
-            'account_currency' => 'required|in:RTGS,ZWL,USD',
+            'account_currency' => 'required|in:RTGS,ZWG,USD',
             'is_default' => 'boolean',
         ]);
 
@@ -74,7 +74,7 @@ class CompanyBankDetailController extends Controller
             'branch_code' => 'required|string|max:10',
             'account_number' => 'required|string|min:10|max:20',
             'account_type' => 'required|in:Current,Nostro,FCA',
-            'account_currency' => 'required|in:RTGS,ZWL,USD',
+            'account_currency' => 'required|in:RTGS,ZWG,USD',
             'is_default' => 'boolean',
         ]);
 

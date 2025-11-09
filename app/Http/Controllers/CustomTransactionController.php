@@ -248,7 +248,7 @@ class CustomTransactionController extends Controller
                 } else {
                     $baseAmount = $request->base_amount ?? 0;
                     $estimate['estimated_amount_usd'] = round($cappedRatio * $baseAmount, 2);
-                    // ZWL would need exchange rate
+                    // ZWG would need exchange rate
                 }
             }
         }

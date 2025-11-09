@@ -24,7 +24,7 @@ return new class extends Migration
             $table->text('account_number'); // Will be encrypted
             $table->string('account_name')->nullable();
             $table->enum('account_type', ['Current', 'Savings', 'FCA'])->default('Current');
-            $table->enum('account_currency', ['USD', 'ZWL', 'ZiG'])->default('USD');
+            $table->enum('account_currency', ['USD', 'ZWG', 'ZiG'])->default('USD');
 
             // Capacity & Status
             $table->decimal('capacity', 5, 2)->default(100.00)->comment('Percentage allocation for salary splitting');

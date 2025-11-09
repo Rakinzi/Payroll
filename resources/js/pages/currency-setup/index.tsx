@@ -211,14 +211,14 @@ function CurrencySplitFormDialog() {
                     <DialogDescription>
                         {selectedSplit
                             ? 'Update the currency split configuration.'
-                            : 'Define the percentage split between ZWL and USD for payroll.'}
+                            : 'Define the percentage split between ZWG and USD for payroll.'}
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="zwl_percentage">ZWL Percentage *</Label>
+                                <Label htmlFor="zwl_percentage">ZWG Percentage *</Label>
                                 <div className="relative">
                                     <Input
                                         id="zwl_percentage"
@@ -359,7 +359,7 @@ function ExchangeRateFormDialog() {
     const { supportedCurrencies } = usePage<CurrencySetupPageProps>().props;
 
     const [fromCurrency, setFromCurrency] = useState(selectedRate?.from_currency || 'USD');
-    const [toCurrency, setToCurrency] = useState(selectedRate?.to_currency || 'ZWL');
+    const [toCurrency, setToCurrency] = useState(selectedRate?.to_currency || 'ZWG');
     const [rate, setRate] = useState(selectedRate?.rate || 0);
     const [effectiveDate, setEffectiveDate] = useState(
         selectedRate?.effective_date || new Date().toISOString().split('T')[0]
@@ -410,7 +410,7 @@ function ExchangeRateFormDialog() {
         setRateFormOpen(false);
         setSelectedRate(null);
         setFromCurrency('USD');
-        setToCurrency('ZWL');
+        setToCurrency('ZWG');
         setRate(0);
         setEffectiveDate(new Date().toISOString().split('T')[0]);
         setIsActive(true);
@@ -625,7 +625,7 @@ export default function CurrencySetupIndex() {
                         {currentSplit && (
                             <span className="ml-2">
                                 Current split: <strong>{currentSplit.formatted_zwl_percentage}</strong>{' '}
-                                ZWL, <strong>{currentSplit.formatted_usd_percentage}</strong> USD
+                                ZWG, <strong>{currentSplit.formatted_usd_percentage}</strong> USD
                             </span>
                         )}
                     </AlertDescription>
@@ -647,7 +647,7 @@ export default function CurrencySetupIndex() {
                                             Currency Splits
                                         </CardTitle>
                                         <CardDescription>
-                                            Configure the percentage split between ZWL and USD for payroll
+                                            Configure the percentage split between ZWG and USD for payroll
                                         </CardDescription>
                                     </div>
                                     <Button onClick={handleAddSplit}>
@@ -661,7 +661,7 @@ export default function CurrencySetupIndex() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Effective Date</TableHead>
-                                            <TableHead>ZWL %</TableHead>
+                                            <TableHead>ZWG %</TableHead>
                                             <TableHead>USD %</TableHead>
                                             <TableHead>Notes</TableHead>
                                             <TableHead>Status</TableHead>

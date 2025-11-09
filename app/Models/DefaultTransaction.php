@@ -150,7 +150,7 @@ class DefaultTransaction extends Model
             'employee_amount' => 'required|numeric|min:0',
             'employer_amount' => 'nullable|numeric|min:0',
             'hours_worked' => 'nullable|numeric|min:0',
-            'transaction_currency' => 'required|in:ZWL,USD',
+            'transaction_currency' => 'required|in:ZWG,USD',
         ];
     }
 }

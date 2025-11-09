@@ -89,7 +89,7 @@ class AccountingPeriodController extends Controller
     public function run(Request $request, AccountingPeriod $period)
     {
         $validated = $request->validate([
-            'currency' => 'required|in:ZWL,USD,DEFAULT',
+            'currency' => 'required|in:ZWG,USD,DEFAULT',
         ]);
 
         // Authorization check
@@ -118,7 +118,7 @@ class AccountingPeriodController extends Controller
     public function refresh(Request $request, AccountingPeriod $period)
     {
         $validated = $request->validate([
-            'currency' => 'required|in:ZWL,USD,DEFAULT',
+            'currency' => 'required|in:ZWG,USD,DEFAULT',
         ]);
 
         // Authorization check
@@ -205,7 +205,7 @@ class AccountingPeriodController extends Controller
     public function updateCurrency(Request $request, AccountingPeriod $period)
     {
         $validated = $request->validate([
-            'currency' => 'required|in:ZWL,USD,DEFAULT',
+            'currency' => 'required|in:ZWG,USD,DEFAULT',
         ]);
 
         $centerId = Auth::user()->center_id;

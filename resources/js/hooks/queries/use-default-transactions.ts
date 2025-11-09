@@ -12,7 +12,7 @@ export interface DefaultTransaction {
     employee_amount: number;
     employer_amount: number;
     hours_worked: number;
-    transaction_currency: 'ZWL' | 'USD';
+    transaction_currency: 'ZWG' | 'USD';
     total_amount: number;
     effect_display: string;
     currency_symbol: string;
@@ -31,7 +31,7 @@ export interface DefaultTransactionInput {
     employee_amount: number;
     employer_amount?: number;
     hours_worked?: number;
-    transaction_currency: 'ZWL' | 'USD';
+    transaction_currency: 'ZWG' | 'USD';
 }
 
 export interface SaveDefaultTransactionsData {

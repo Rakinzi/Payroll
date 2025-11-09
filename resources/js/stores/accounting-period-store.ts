@@ -33,9 +33,9 @@ interface AccountingPeriodState {
     getProcessingAction: (periodId: number) => string | null;
 
     // Currency selection
-    periodCurrencies: Map<number, 'ZWL' | 'USD' | 'DEFAULT'>;
-    setPeriodCurrency: (periodId: number, currency: 'ZWL' | 'USD' | 'DEFAULT') => void;
-    getPeriodCurrency: (periodId: number) => 'ZWL' | 'USD' | 'DEFAULT';
+    periodCurrencies: Map<number, 'ZWG' | 'USD' | 'DEFAULT'>;
+    setPeriodCurrency: (periodId: number, currency: 'ZWG' | 'USD' | 'DEFAULT') => void;
+    getPeriodCurrency: (periodId: number) => 'ZWG' | 'USD' | 'DEFAULT';
 
     // Modal/Dialog state
     showGeneratePeriodDialog: boolean;
@@ -49,12 +49,12 @@ interface AccountingPeriodState {
         isOpen: boolean;
         periodId: number | null;
         action: 'run' | 'refresh' | 'close' | null;
-        currency?: 'ZWL' | 'USD' | 'DEFAULT';
+        currency?: 'ZWG' | 'USD' | 'DEFAULT';
     };
     openConfirmationDialog: (
         periodId: number,
         action: 'run' | 'refresh' | 'close',
-        currency?: 'ZWL' | 'USD' | 'DEFAULT'
+        currency?: 'ZWG' | 'USD' | 'DEFAULT'
     ) => void;
     closeConfirmationDialog: () => void;
 

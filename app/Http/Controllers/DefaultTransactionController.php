@@ -57,7 +57,7 @@ class DefaultTransactionController extends Controller
             'transactions.*.employee_amount' => 'required|numeric|min:0',
             'transactions.*.employer_amount' => 'nullable|numeric|min:0',
             'transactions.*.hours_worked' => 'nullable|numeric|min:0',
-            'transactions.*.transaction_currency' => 'required|in:ZWL,USD',
+            'transactions.*.transaction_currency' => 'required|in:ZWG,USD',
         ]);
 
         // Verify current period
