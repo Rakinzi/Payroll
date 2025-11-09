@@ -442,6 +442,19 @@ Route::middleware([
             Route::post('/calculate-estimate', [\App\Http\Controllers\CustomTransactionController::class, 'calculateEstimate'])->name('calculate-estimate');
         });
 
+        // Notices Management Routes
+        Route::prefix('notices')->name('notices.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\NoticeController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\NoticeController::class, 'store'])->name('store')->middleware('can:create,App\Models\Notice');
+            Route::get('/{notice}', [\App\Http\Controllers\NoticeController::class, 'show'])->name('show');
+            Route::post('/{notice}', [\App\Http\Controllers\NoticeController::class, 'update'])->name('update');
+            Route::delete('/{notice}', [\App\Http\Controllers\NoticeController::class, 'destroy'])->name('destroy');
+            Route::get('/{notice}/download', [\App\Http\Controllers\NoticeController::class, 'download'])->name('download');
+
+            // AJAX endpoints
+            Route::get('/latest/all', [\App\Http\Controllers\NoticeController::class, 'latest'])->name('latest');
+        });
+
         // Spreadsheet Import/Export Routes (Admin only)
         Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
