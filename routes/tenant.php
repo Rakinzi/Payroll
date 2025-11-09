@@ -394,6 +394,29 @@ Route::middleware([
             });
         });
 
+        // Accounting Period Management Routes
+        Route::prefix('accounting-periods')->name('accounting-periods.')->group(function () {
+            // List and view accounting periods (all users can view)
+            Route::get('/', [\App\Http\Controllers\AccountingPeriodController::class, 'index'])->name('index');
+            Route::get('/{period}', [\App\Http\Controllers\AccountingPeriodController::class, 'show'])->name('show');
+
+            // Period operations (center users and admins)
+            Route::post('/{period}/run', [\App\Http\Controllers\AccountingPeriodController::class, 'run'])->name('run');
+            Route::post('/{period}/refresh', [\App\Http\Controllers\AccountingPeriodController::class, 'refresh'])->name('refresh');
+            Route::post('/{period}/close', [\App\Http\Controllers\AccountingPeriodController::class, 'close'])->name('close');
+
+            // AJAX endpoints
+            Route::get('/{period}/status', [\App\Http\Controllers\AccountingPeriodController::class, 'status'])->name('status');
+            Route::post('/{period}/currency', [\App\Http\Controllers\AccountingPeriodController::class, 'updateCurrency'])->name('update-currency');
+            Route::get('/{period}/summary', [\App\Http\Controllers\AccountingPeriodController::class, 'summary'])->name('summary');
+
+            // Admin-only operations
+            Route::middleware('permission:access all centers')->group(function () {
+                Route::post('/generate', [\App\Http\Controllers\AccountingPeriodController::class, 'generatePeriods'])->name('generate');
+                Route::get('/{period}/export', [\App\Http\Controllers\AccountingPeriodController::class, 'export'])->name('export');
+            });
+        });
+
         // Spreadsheet Import/Export Routes (Admin only)
         Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
