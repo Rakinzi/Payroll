@@ -27,10 +27,22 @@ class Company extends Model
         'description',
         'logo',
         'is_active',
+        // Working days policy
+        'working_days_policy',
+        'standard_working_days_per_month',
+        'exclude_saturdays',
+        'exclude_sundays',
+        'exclude_public_holidays',
+        'custom_holidays',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'exclude_saturdays' => 'boolean',
+        'exclude_sundays' => 'boolean',
+        'exclude_public_holidays' => 'boolean',
+        'custom_holidays' => 'array',
+        'standard_working_days_per_month' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
