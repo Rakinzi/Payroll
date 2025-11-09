@@ -230,8 +230,8 @@ class SMSNotificationService
         $results = [];
 
         foreach ($recipients as $recipient) {
-            $phone = $recipient['phone'] ?? '';
-            $message = $recipient['message'] ?? '';
+            $phone = $recipient['phone'];
+            $message = $recipient['message'];
 
             if (empty($phone) || empty($message)) {
                 $results[] = [

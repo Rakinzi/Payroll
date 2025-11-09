@@ -251,7 +251,8 @@ class CurrencyController extends Controller
         $currencies = Currency::getActiveCurrencies();
 
         return response()->json([
-            'currencies' => $currencies->map(function (Currency $currency) {
+            'currencies' => $currencies->map(function ($currency) {
+                /** @var Currency $currency */
                 return [
                     'currency_id' => $currency->currency_id,
                     'code' => $currency->code,
@@ -337,15 +338,15 @@ class CurrencyController extends Controller
                 return [
                     'history_id' => $record->history_id,
                     'rate' => $record->rate,
-                    'formatted_rate' => number_format($record->rate, 4),
+                    'formatted_rate' => number_format((float) $record->rate, 4),
                     'previous_rate' => $record->previous_rate,
-                    'formatted_previous_rate' => $record->previous_rate ? number_format($record->previous_rate, 4) : null,
-                    'change_amount' => $record->change_amount,
-                    'change_percentage' => $record->change_percentage,
-                    'formatted_change' => $record->formatted_change,
+                    'formatted_previous_rate' => $record->previous_rate ? number_format((float) $record->previous_rate, 4) : null,
+                    'rate_change' => $record->rate_change,
+                    'rate_change_percentage' => $record->rate_change_percentage,
+                    'formatted_change' => $record->rate_change ? number_format($record->rate_change, 4) : null,
                     'source' => $record->source,
                     'source_label' => ucfirst($record->source),
-                    'updated_by' => $record->updatedBy ? $record->updatedBy->firstname . ' ' . $record->updatedBy->surname : null,
+                    'updated_by' => $record->updatedBy?->name,
                     'notes' => $record->notes,
                     'effective_date' => $record->effective_date,
                     'formatted_date' => $record->effective_date->format('Y-m-d H:i:s'),
@@ -377,7 +378,7 @@ class CurrencyController extends Controller
                 'currency_code' => $currency->code,
                 'date' => $request->date,
                 'rate' => $rate,
-                'formatted_rate' => number_format($rate, 4),
+                'formatted_rate' => number_format((float) $rate, 4),
             ]);
 
         } catch (\Exception $e) {

@@ -44,7 +44,7 @@ class CurrencyExchangeService
                 $newRate = $this->fetchExchangeRate($baseCurrency->code, $currency->code);
 
                 if ($newRate) {
-                    $previousRate = $currency->exchange_rate;
+                    $previousRate = (float) $currency->exchange_rate;
 
                     // Update currency
                     $currency->update(['exchange_rate' => $newRate]);
@@ -156,7 +156,7 @@ class CurrencyExchangeService
                 ];
             }
 
-            $previousRate = $currency->exchange_rate;
+            $previousRate = (float) $currency->exchange_rate;
 
             // Update currency
             $currency->update(['exchange_rate' => $newRate]);

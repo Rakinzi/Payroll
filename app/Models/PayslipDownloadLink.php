@@ -4,9 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
+/**
+ * @property int $link_id
+ * @property string $payslip_id
+ * @property string $employee_id
+ * @property string $token
+ * @property string $download_method
+ * @property Carbon $expires_at
+ * @property bool $is_used
+ * @property Carbon|null $accessed_at
+ * @property string|null $access_ip
+ * @property string|null $access_user_agent
+ * @property int $access_count
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Payslip $payslip
+ * @property-read Employee $employee
+ */
 class PayslipDownloadLink extends Model
 {
     protected $table = 'payslip_download_links';
@@ -127,29 +145,49 @@ class PayslipDownloadLink extends Model
 
     // Scopes
 
-    public function scopeValid($query)
+    /**
+     * @param Builder<PayslipDownloadLink> $query
+     * @return Builder<PayslipDownloadLink>
+     */
+    public function scopeValid(Builder $query): Builder
     {
         return $query->where('is_used', false)
             ->where('expires_at', '>', Carbon::now())
             ->where('access_count', '<', 5);
     }
 
-    public function scopeExpired($query)
+    /**
+     * @param Builder<PayslipDownloadLink> $query
+     * @return Builder<PayslipDownloadLink>
+     */
+    public function scopeExpired(Builder $query): Builder
     {
         return $query->where('expires_at', '<=', Carbon::now());
     }
 
-    public function scopeByMethod($query, string $method)
+    /**
+     * @param Builder<PayslipDownloadLink> $query
+     * @return Builder<PayslipDownloadLink>
+     */
+    public function scopeByMethod(Builder $query, string $method): Builder
     {
         return $query->where('download_method', $method);
     }
 
-    public function scopeForPayslip($query, string $payslipId)
+    /**
+     * @param Builder<PayslipDownloadLink> $query
+     * @return Builder<PayslipDownloadLink>
+     */
+    public function scopeForPayslip(Builder $query, string $payslipId): Builder
     {
         return $query->where('payslip_id', $payslipId);
     }
 
-    public function scopeForEmployee($query, string $employeeId)
+    /**
+     * @param Builder<PayslipDownloadLink> $query
+     * @return Builder<PayslipDownloadLink>
+     */
+    public function scopeForEmployee(Builder $query, string $employeeId): Builder
     {
         return $query->where('employee_id', $employeeId);
     }
