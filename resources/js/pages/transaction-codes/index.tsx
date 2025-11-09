@@ -40,6 +40,7 @@ import {
     useUpdateTransactionCode,
     CATEGORY_COLORS,
 } from '@/hooks/queries/use-transaction-codes';
+import { useDialog } from '@/hooks/use-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
@@ -84,6 +85,7 @@ export default function TransactionCodesPage({ transactionCodes, filters, catego
     const [categoryFilter, setCategoryFilter] = useState(filters?.category ?? 'all');
     const deleteMutation = useDeleteTransactionCode();
     const { open: openDialog } = useTransactionCodeDialog();
+    const dialog = useDialog();
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -95,8 +97,17 @@ export default function TransactionCodesPage({ transactionCodes, filters, catego
         router.get('/transaction-codes', { search, category: value !== 'all' ? value : undefined }, { preserveState: true, replace: true });
     };
 
-    const handleDelete = (transactionCode: TransactionCode) => {
-        if (confirm(`Are you sure you want to delete ${transactionCode.code_name}?`)) {
+    const handleDelete = async (transactionCode: TransactionCode) => {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to delete ${transactionCode.code_name}?`,
+            {
+                title: 'Confirm Deletion',
+                confirmText: 'Delete',
+                variant: 'destructive',
+            }
+        );
+
+        if (confirmed) {
             deleteMutation.mutate(transactionCode.id);
         }
     };

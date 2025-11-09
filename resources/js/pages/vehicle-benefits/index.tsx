@@ -111,6 +111,7 @@ function VehicleBenefitFormDialog() {
 
     const createMutation = useCreateVehicleBenefitBand();
     const updateMutation = useUpdateVehicleBenefitBand(selectedBand?.id || '');
+    const dialog = useDialog();
 
     // Update form when selected band changes
     if (selectedBand && engineCapacityMin === 0 && formDialogOpen) {
@@ -127,7 +128,7 @@ function VehicleBenefitFormDialog() {
         e.preventDefault();
 
         if (engineCapacityMax !== null && engineCapacityMax <= engineCapacityMin) {
-            alert('Maximum capacity must be greater than minimum capacity');
+            dialog.alert('Maximum capacity must be greater than minimum capacity', 'Validation Error');
             return;
         }
 
