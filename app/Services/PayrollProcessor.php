@@ -16,10 +16,12 @@ use Carbon\Carbon;
 class PayrollProcessor
 {
     protected TaxCalculator $taxCalculator;
+    protected LeaveAccrualService $leaveAccrualService;
 
-    public function __construct(TaxCalculator $taxCalculator)
+    public function __construct(TaxCalculator $taxCalculator, LeaveAccrualService $leaveAccrualService)
     {
         $this->taxCalculator = $taxCalculator;
+        $this->leaveAccrualService = $leaveAccrualService;
     }
 
     /**
@@ -63,6 +65,14 @@ class PayrollProcessor
             foreach ($employees as $employee) {
                 $this->processEmployee($period, $employee, $currency);
             }
+
+            // Process leave accruals for this period
+            $monthNumber = $this->getMonthNumber($period->month_name);
+            $this->leaveAccrualService->processAccruals(
+                $period->payroll_id,
+                $monthNumber,
+                $period->year
+            );
 
             // Mark period as run
             $centerStatus->markAsRun($currency);
@@ -117,6 +127,14 @@ class PayrollProcessor
             foreach ($payslips as $payslip) {
                 $this->recalculatePayslip($payslip, $period, $currency);
             }
+
+            // Re-process leave accruals for this period
+            $monthNumber = $this->getMonthNumber($period->month_name);
+            $this->leaveAccrualService->processAccruals(
+                $period->payroll_id,
+                $monthNumber,
+                $period->year
+            );
 
             // Update center status timestamp
             $centerStatus->update(['period_run_date' => now()]);
