@@ -455,6 +455,17 @@ Route::middleware([
             Route::get('/latest/all', [\App\Http\Controllers\NoticeController::class, 'latest'])->name('latest');
         });
 
+        // Profile Settings Routes
+        Route::prefix('settings/profile')->name('settings.profile.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
+            Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+            Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('avatar');
+            Route::post('/signature', [\App\Http\Controllers\ProfileController::class, 'updateSignature'])->name('signature');
+            Route::post('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+            Route::post('/payslip-password', [\App\Http\Controllers\ProfileController::class, 'updatePayslipPassword'])->name('payslip-password');
+            Route::put('/bank-details', [\App\Http\Controllers\ProfileController::class, 'updateBankDetails'])->name('bank-details');
+        });
+
         // Spreadsheet Import/Export Routes (Admin only)
         Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
