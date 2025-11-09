@@ -417,6 +417,31 @@ Route::middleware([
             });
         });
 
+        // Default Transactions Management Routes
+        Route::prefix('default-transactions')->name('default-transactions.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\DefaultTransactionController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\DefaultTransactionController::class, 'store'])->name('store');
+            Route::delete('/{transaction}', [\App\Http\Controllers\DefaultTransactionController::class, 'destroy'])->name('destroy');
+            Route::post('/clear-all', [\App\Http\Controllers\DefaultTransactionController::class, 'clearAll'])->name('clear-all');
+
+            // AJAX endpoints
+            Route::get('/transaction-codes', [\App\Http\Controllers\DefaultTransactionController::class, 'getTransactionCodes'])->name('transaction-codes');
+        });
+
+        // Custom Transactions Management Routes
+        Route::prefix('custom-transactions')->name('custom-transactions.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\CustomTransactionController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\CustomTransactionController::class, 'store'])->name('store');
+            Route::get('/{transaction}', [\App\Http\Controllers\CustomTransactionController::class, 'show'])->name('show');
+            Route::put('/{transaction}', [\App\Http\Controllers\CustomTransactionController::class, 'update'])->name('update');
+            Route::delete('/{transaction}', [\App\Http\Controllers\CustomTransactionController::class, 'destroy'])->name('destroy');
+
+            // AJAX endpoints
+            Route::get('/{transaction}/employees', [\App\Http\Controllers\CustomTransactionController::class, 'getEmployees'])->name('employees');
+            Route::get('/{transaction}/codes', [\App\Http\Controllers\CustomTransactionController::class, 'getCodes'])->name('codes');
+            Route::post('/calculate-estimate', [\App\Http\Controllers\CustomTransactionController::class, 'calculateEstimate'])->name('calculate-estimate');
+        });
+
         // Spreadsheet Import/Export Routes (Admin only)
         Route::prefix('spreadsheet-import')->name('spreadsheet-import.')->group(function () {
             Route::middleware('permission:access all centers')->group(function () {
