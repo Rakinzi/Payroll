@@ -555,7 +555,18 @@ Route::middleware([
 
                 // Delete payslip
                 Route::delete('/{payslip}', [PayslipController::class, 'destroy'])->name('destroy');
+
+                // Multi-channel distribution
+                Route::post('/{payslip}/send-multi-channel', [PayslipController::class, 'sendMultiChannel'])->name('send-multi-channel');
+                Route::get('/{payslip}/notification-stats', [PayslipController::class, 'getNotificationStats'])->name('notification-stats');
             });
+        });
+
+        // Secure Payslip Download Routes (Public - no auth required)
+        Route::prefix('payslip-download')->name('payslips.secure-')->group(function () {
+            Route::get('/{token}', [\App\Http\Controllers\SecurePayslipController::class, 'showPasswordForm'])->name('password-form');
+            Route::post('/{token}/download', [\App\Http\Controllers\SecurePayslipController::class, 'download'])->name('download');
+            Route::post('/resend', [\App\Http\Controllers\SecurePayslipController::class, 'resendLink'])->name('resend');
         });
 
         // Reports Management Routes (Admin only)

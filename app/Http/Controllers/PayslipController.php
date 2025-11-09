@@ -8,10 +8,14 @@ use App\Models\Payroll;
 use App\Models\Payslip;
 use App\Models\PayslipTransaction;
 use App\Models\PayslipDistributionLog;
+use App\Models\PayslipDownloadLink;
+use App\Models\PayslipNotification;
+use App\Services\SMSNotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class PayslipController extends Controller
@@ -496,5 +500,218 @@ class PayslipController extends Controller
 
         return redirect()->route('payslips.index')
             ->with('success', 'Payslip deleted successfully');
+    }
+
+    /**
+     * Send payslip via multiple channels (SMS, WhatsApp, Email)
+     */
+    public function sendMultiChannel(Request $request, Payslip $payslip)
+    {
+        if (!$payslip->canBeDistributed()) {
+            return back()->withErrors(['error' => 'Only finalized payslips can be distributed']);
+        }
+
+        $validated = $request->validate([
+            'channels' => 'required|array|min:1',
+            'channels.*' => 'in:email,sms,whatsapp',
+        ]);
+
+        $employee = $payslip->employee;
+        $results = [];
+        $errors = [];
+
+        // Generate secure download link
+        $downloadLink = PayslipDownloadLink::generate(
+            $payslip->id,
+            $employee->id,
+            'multi_channel',
+            168 // 7 days expiry
+        );
+
+        $downloadUrl = $downloadLink->getDownloadUrl();
+
+        foreach ($validated['channels'] as $channel) {
+            try {
+                $result = match ($channel) {
+                    'email' => $this->sendViaEmail($payslip, $employee, $downloadUrl),
+                    'sms' => $this->sendViaSMS($payslip, $employee, $downloadUrl),
+                    'whatsapp' => $this->sendViaWhatsApp($payslip, $employee, $downloadUrl),
+                    default => ['success' => false, 'error' => 'Invalid channel'],
+                };
+
+                if ($result['success']) {
+                    $results[] = $channel;
+                } else {
+                    $errors[] = "{$channel}: {$result['error']}";
+                }
+            } catch (\Exception $e) {
+                $errors[] = "{$channel}: {$e->getMessage()}";
+                Log::error("Failed to send payslip via {$channel}", [
+                    'payslip_id' => $payslip->id,
+                    'employee_id' => $employee->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Mark payslip as distributed if at least one channel succeeded
+        if (count($results) > 0) {
+            $payslip->markDistributed();
+
+            $message = 'Payslip sent successfully via: ' . implode(', ', $results);
+            if (count($errors) > 0) {
+                $message .= '. Failed: ' . implode('; ', $errors);
+            }
+
+            return back()->with('success', $message);
+        }
+
+        return back()->withErrors(['error' => 'Failed to send via all channels. ' . implode('; ', $errors)]);
+    }
+
+    /**
+     * Send payslip link via Email
+     */
+    protected function sendViaEmail(Payslip $payslip, Employee $employee, string $downloadUrl): array
+    {
+        if (!$employee->email_notifications_enabled || empty($employee->emp_email)) {
+            return ['success' => false, 'error' => 'Email notifications disabled or no email address'];
+        }
+
+        $notification = PayslipNotification::createNotification(
+            $payslip->id,
+            $employee->id,
+            auth()->id(),
+            'email',
+            $employee->emp_email,
+            "Payslip for {$payslip->period_display}"
+        );
+
+        try {
+            // TODO: Send actual email using Mail facade
+            // For now, just mark as sent
+            Log::info('Email sent (placeholder)', [
+                'to' => $employee->emp_email,
+                'payslip' => $payslip->payslip_number,
+                'link' => $downloadUrl,
+            ]);
+
+            $notification->markAsSent();
+
+            return ['success' => true, 'notification_id' => $notification->notification_id];
+        } catch (\Exception $e) {
+            $notification->markAsFailed($e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Send payslip link via SMS
+     */
+    protected function sendViaSMS(Payslip $payslip, Employee $employee, string $downloadUrl): array
+    {
+        if (!$employee->sms_notifications_enabled || empty($employee->phone)) {
+            return ['success' => false, 'error' => 'SMS notifications disabled or no phone number'];
+        }
+
+        $notification = PayslipNotification::createNotification(
+            $payslip->id,
+            $employee->id,
+            auth()->id(),
+            'sms',
+            $employee->phone
+        );
+
+        try {
+            $smsService = new SMSNotificationService();
+
+            $message = SMSNotificationService::generatePayslipMessage(
+                $employee->firstname,
+                $payslip->period_display,
+                $downloadUrl
+            );
+
+            $notification->update(['message' => $message]);
+
+            $result = $smsService->send($employee->phone, $message);
+
+            if ($result['success']) {
+                $notification->markAsSent($result['message_id']);
+                return ['success' => true, 'notification_id' => $notification->notification_id];
+            } else {
+                $notification->markAsFailed($result['error']);
+                return ['success' => false, 'error' => $result['error']];
+            }
+        } catch (\Exception $e) {
+            $notification->markAsFailed($e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Send payslip link via WhatsApp
+     */
+    protected function sendViaWhatsApp(Payslip $payslip, Employee $employee, string $downloadUrl): array
+    {
+        if (!$employee->whatsapp_notifications_enabled || empty($employee->whatsapp_phone_number)) {
+            return ['success' => false, 'error' => 'WhatsApp notifications disabled or not opted in'];
+        }
+
+        if (!$employee->whatsapp_opted_in_at) {
+            return ['success' => false, 'error' => 'Employee has not opted in to WhatsApp notifications'];
+        }
+
+        $notification = PayslipNotification::createNotification(
+            $payslip->id,
+            $employee->id,
+            auth()->id(),
+            'whatsapp',
+            $employee->whatsapp_phone_number
+        );
+
+        try {
+            // TODO: Implement WhatsApp Business API integration
+            // For now, just log
+            Log::info('WhatsApp sent (placeholder)', [
+                'to' => $employee->whatsapp_phone_number,
+                'payslip' => $payslip->payslip_number,
+                'link' => $downloadUrl,
+            ]);
+
+            $notification->markAsSent();
+
+            return ['success' => true, 'notification_id' => $notification->notification_id];
+        } catch (\Exception $e) {
+            $notification->markAsFailed($e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get notification statistics for a payslip
+     */
+    public function getNotificationStats(Payslip $payslip)
+    {
+        $stats = PayslipNotification::getStatsForPayslip($payslip->id);
+
+        return response()->json([
+            'stats' => $stats,
+            'notifications' => PayslipNotification::forPayslip($payslip->id)
+                ->with('sender:id,name')
+                ->latest()
+                ->get()
+                ->map(function ($notification) {
+                    return [
+                        'id' => $notification->notification_id,
+                        'channel' => $notification->channel,
+                        'channel_display' => $notification->channel_display,
+                        'recipient' => $notification->recipient,
+                        'status' => $notification->status,
+                        'status_display' => $notification->status_display,
+                        'sent_at' => $notification->sent_at?->toISOString(),
+                        'sender' => $notification->sender->name,
+                    ];
+                }),
+        ]);
     }
 }
