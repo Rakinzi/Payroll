@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { create } from 'zustand';
+import { useDialog } from '@/hooks/use-dialog';
 import AppLayout from '@/components/layouts/app-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -135,6 +136,7 @@ function CurrencySplitFormDialog() {
 
     const createMutation = useCreateCurrencySplit();
     const updateMutation = useUpdateCurrencySplit(selectedSplit?.id || '');
+    const dialog = useDialog();
 
     // Update form when selected split changes
     if (selectedSplit && zwlPercentage === 0 && usdPercentage === 100 && splitFormOpen) {
@@ -150,7 +152,7 @@ function CurrencySplitFormDialog() {
 
         const total = parseFloat(zwlPercentage.toString()) + parseFloat(usdPercentage.toString());
         if (Math.abs(total - 100) >= 0.01) {
-            alert('Currency split percentages must total 100%');
+            dialog.alert('Currency split percentages must total 100%', 'Validation Error');
             return;
         }
 
@@ -368,6 +370,7 @@ function ExchangeRateFormDialog() {
 
     const createMutation = useCreateExchangeRate();
     const updateMutation = useUpdateExchangeRate(selectedRate?.id || '');
+    const dialog = useDialog();
 
     // Update form when selected rate changes
     if (selectedRate && rate === 0 && rateFormOpen) {
@@ -382,7 +385,7 @@ function ExchangeRateFormDialog() {
         e.preventDefault();
 
         if (fromCurrency === toCurrency) {
-            alert('From and To currencies must be different');
+            dialog.alert('From and To currencies must be different', 'Validation Error');
             return;
         }
 
