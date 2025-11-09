@@ -42,6 +42,7 @@ import {
     CURRENCY_COLORS,
     PERIOD_COLORS,
 } from '@/hooks/queries/use-tax-credits';
+import { useDialog } from '@/hooks/use-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
@@ -88,6 +89,7 @@ export default function TaxCreditsPage({ taxCredits, filters, currencies, period
     const [periodFilter, setPeriodFilter] = useState(filters?.period ?? 'all');
     const deleteMutation = useDeleteTaxCredit();
     const { open: openDialog } = useTaxCreditDialog();
+    const dialog = useDialog();
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -128,8 +130,17 @@ export default function TaxCreditsPage({ taxCredits, filters, currencies, period
         );
     };
 
-    const handleDelete = (taxCredit: TaxCredit) => {
-        if (confirm(`Are you sure you want to delete ${taxCredit.credit_name}?`)) {
+    const handleDelete = async (taxCredit: TaxCredit) => {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to delete ${taxCredit.credit_name}?`,
+            {
+                title: 'Confirm Deletion',
+                confirmText: 'Delete',
+                variant: 'destructive',
+            }
+        );
+
+        if (confirmed) {
             deleteMutation.mutate(taxCredit.id);
         }
     };
