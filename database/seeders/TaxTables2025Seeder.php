@@ -11,8 +11,9 @@ class TaxTables2025Seeder extends Seeder
     /**
      * Run the database seeds.
      *
-     * Zimbabwe 2025 Tax Tables
-     * Update these values with official ZIMRA 2025 tax rates
+     * Zimbabwe 2025 Official ZIMRA Tax Tables
+     * Source: ZIMRA PAYE Tax Tables for 1 January to 31 December 2025
+     * Note: AIDS Levy (3% of tax payable) is applied separately
      */
     public function run(): void
     {
@@ -22,47 +23,44 @@ class TaxTables2025Seeder extends Seeder
         DB::table('tax_bands_monthly_usd')->truncate();
         DB::table('tax_bands_monthly_zwl')->truncate();
 
-        // Annual USD Tax Bands (2025)
-        // TODO: Update with official 2025 ZIMRA rates
+        // Annual USD Tax Bands (2025) - Official ZIMRA rates
         $annualUsdBands = [
-            ['min' => 0, 'max' => 60000, 'rate' => 0.00, 'amount' => 0.00],
-            ['min' => 60000, 'max' => 120000, 'rate' => 0.20, 'amount' => 0.00],
-            ['min' => 120000, 'max' => 240000, 'rate' => 0.25, 'amount' => 12000.00],
-            ['min' => 240000, 'max' => 480000, 'rate' => 0.30, 'amount' => 42000.00],
-            ['min' => 480000, 'max' => 960000, 'rate' => 0.35, 'amount' => 114000.00],
-            ['min' => 960000, 'max' => null, 'rate' => 0.40, 'amount' => 282000.00],
+            ['min' => 0, 'max' => 1200, 'rate' => 0.00, 'amount' => 0.00],
+            ['min' => 1200.01, 'max' => 3600, 'rate' => 0.20, 'amount' => 240.00],
+            ['min' => 3600.01, 'max' => 12000, 'rate' => 0.25, 'amount' => 420.00],
+            ['min' => 12000.01, 'max' => 24000, 'rate' => 0.30, 'amount' => 1020.00],
+            ['min' => 24000.01, 'max' => 36000, 'rate' => 0.35, 'amount' => 2220.00],
+            ['min' => 36000.01, 'max' => null, 'rate' => 0.40, 'amount' => 4020.00],
         ];
 
-        // Annual ZWG Tax Bands (2025)
-        // TODO: Update with official 2025 ZIMRA rates
+        // Annual ZWG Tax Bands (2025) - Official ZIMRA rates
         $annualZwgBands = [
-            ['min' => 0, 'max' => 60000, 'rate' => 0.00, 'amount' => 0.00],
-            ['min' => 60000, 'max' => 120000, 'rate' => 0.20, 'amount' => 0.00],
-            ['min' => 120000, 'max' => 240000, 'rate' => 0.25, 'amount' => 12000.00],
-            ['min' => 240000, 'max' => 480000, 'rate' => 0.30, 'amount' => 42000.00],
-            ['min' => 480000, 'max' => 960000, 'rate' => 0.35, 'amount' => 114000.00],
-            ['min' => 960000, 'max' => null, 'rate' => 0.40, 'amount' => 282000.00],
+            ['min' => 0, 'max' => 33600, 'rate' => 0.00, 'amount' => 0.00],
+            ['min' => 33600.01, 'max' => 100800, 'rate' => 0.20, 'amount' => 6720.00],
+            ['min' => 100800.01, 'max' => 336000, 'rate' => 0.25, 'amount' => 11760.00],
+            ['min' => 336000.01, 'max' => 672000, 'rate' => 0.30, 'amount' => 28560.00],
+            ['min' => 672000.01, 'max' => 1008000, 'rate' => 0.35, 'amount' => 62160.00],
+            ['min' => 1008000.01, 'max' => null, 'rate' => 0.40, 'amount' => 112560.00],
         ];
 
-        // Monthly USD Tax Bands (2025)
-        // Derived from annual rates divided by 12
+        // Monthly USD Tax Bands (2025) - Official ZIMRA rates
         $monthlyUsdBands = [
-            ['min' => 0, 'max' => 5000, 'rate' => 0.00, 'amount' => 0.00],
-            ['min' => 5000, 'max' => 10000, 'rate' => 0.20, 'amount' => 0.00],
-            ['min' => 10000, 'max' => 20000, 'rate' => 0.25, 'amount' => 1000.00],
-            ['min' => 20000, 'max' => 40000, 'rate' => 0.30, 'amount' => 3500.00],
-            ['min' => 40000, 'max' => 80000, 'rate' => 0.35, 'amount' => 9500.00],
-            ['min' => 80000, 'max' => null, 'rate' => 0.40, 'amount' => 23500.00],
+            ['min' => 0, 'max' => 100, 'rate' => 0.00, 'amount' => 0.00],
+            ['min' => 100.01, 'max' => 300, 'rate' => 0.20, 'amount' => 20.00],
+            ['min' => 300.01, 'max' => 1000, 'rate' => 0.25, 'amount' => 35.00],
+            ['min' => 1000.01, 'max' => 2000, 'rate' => 0.30, 'amount' => 85.00],
+            ['min' => 2000.01, 'max' => 3000, 'rate' => 0.35, 'amount' => 185.00],
+            ['min' => 3000.01, 'max' => null, 'rate' => 0.40, 'amount' => 335.00],
         ];
 
-        // Monthly ZWG Tax Bands (2025)
+        // Monthly ZWG Tax Bands (2025) - Official ZIMRA rates
         $monthlyZwgBands = [
-            ['min' => 0, 'max' => 5000, 'rate' => 0.00, 'amount' => 0.00],
-            ['min' => 5000, 'max' => 10000, 'rate' => 0.20, 'amount' => 0.00],
-            ['min' => 10000, 'max' => 20000, 'rate' => 0.25, 'amount' => 1000.00],
-            ['min' => 20000, 'max' => 40000, 'rate' => 0.30, 'amount' => 3500.00],
-            ['min' => 40000, 'max' => 80000, 'rate' => 0.35, 'amount' => 9500.00],
-            ['min' => 80000, 'max' => null, 'rate' => 0.40, 'amount' => 23500.00],
+            ['min' => 0, 'max' => 2800, 'rate' => 0.00, 'amount' => 0.00],
+            ['min' => 2800.01, 'max' => 8400, 'rate' => 0.20, 'amount' => 560.00],
+            ['min' => 8400.01, 'max' => 28000, 'rate' => 0.25, 'amount' => 980.00],
+            ['min' => 28000.01, 'max' => 56000, 'rate' => 0.30, 'amount' => 2380.00],
+            ['min' => 56000.01, 'max' => 84000, 'rate' => 0.35, 'amount' => 5180.00],
+            ['min' => 84000.01, 'max' => null, 'rate' => 0.40, 'amount' => 9380.00],
         ];
 
         // Insert Annual USD
@@ -114,6 +112,7 @@ class TaxTables2025Seeder extends Seeder
         }
 
         $this->command->info('2025 Zimbabwe Tax Tables seeded successfully!');
-        $this->command->warn('NOTE: These are placeholder rates. Update with official 2025 ZIMRA tax rates.');
+        $this->command->info('Official ZIMRA tax rates for 2025 have been applied.');
+        $this->command->warn('NOTE: AIDS Levy (3% of tax payable) is applied separately in the tax calculator.');
     }
 }
