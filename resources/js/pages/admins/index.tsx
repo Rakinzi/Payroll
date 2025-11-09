@@ -46,7 +46,7 @@ import {
 } from '@/hooks/queries/use-admins';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { KeyRound, MoreHorizontal, Pencil, Plus, Shield, Trash2, UserCog } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -88,11 +88,7 @@ const usePasswordDialog = create<PasswordDialogStore>((set) => ({
 }));
 
 interface Props {
-    admins: {
-        data: Admin[];
-        links: any[];
-        meta: any;
-    };
+    admins: PaginatedData<Admin>;
     costCenters: CostCenter[];
     filters?: {
         search?: string;
@@ -313,7 +309,7 @@ export default function AdminsPage({ admins, costCenters, filters, currentUserId
                 {/* Pagination */}
                 {admins.links && admins.links.length > 3 && (
                     <div className="flex justify-center gap-2">
-                        {admins.links.map((link: any, index: number) => (
+                        {admins.links.map((link: PaginationLink, index: number) => (
                             <Button
                                 key={index}
                                 variant={link.active ? 'default' : 'outline'}

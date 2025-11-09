@@ -42,7 +42,7 @@ import {
 } from '@/hooks/queries/use-transaction-codes';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { MoreHorizontal, Pencil, Plus, Trash2, Shield } from 'lucide-react';
 import { useState } from 'react';
@@ -70,11 +70,7 @@ const useTransactionCodeDialog = create<TransactionCodeDialogStore>((set) => ({
 }));
 
 interface Props {
-    transactionCodes: {
-        data: TransactionCode[];
-        links: any[];
-        meta: any;
-    };
+    transactionCodes: PaginatedData<TransactionCode>;
     filters?: {
         search?: string;
         category?: string;
@@ -255,7 +251,7 @@ export default function TransactionCodesPage({ transactionCodes, filters, catego
                 {/* Pagination */}
                 {transactionCodes.links && transactionCodes.links.length > 3 && (
                     <div className="flex justify-center gap-2">
-                        {transactionCodes.links.map((link: any, index: number) => (
+                        {transactionCodes.links.map((link: PaginationLink, index: number) => (
                             <Button
                                 key={index}
                                 variant={link.active ? 'default' : 'outline'}
