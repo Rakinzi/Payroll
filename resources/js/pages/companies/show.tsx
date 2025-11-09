@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { useDialog } from '@/hooks/use-dialog';
 import { useState } from 'react';
 import AppLayout from '@/components/layouts/app-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -51,6 +52,7 @@ export default function CompanyShow() {
     const updateMutation = useUpdateCompany(company.id);
     const uploadLogoMutation = useUploadCompanyLogo(company.id);
     const deleteLogoMutation = useDeleteCompanyLogo(company.id);
+    const dialog = useDialog();
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -75,7 +77,16 @@ export default function CompanyShow() {
     };
 
     const handleDeleteLogo = async () => {
-        if (!confirm('Are you sure you want to delete the company logo?')) return;
+        const confirmed = await dialog.confirm(
+            'Are you sure you want to delete the company logo?',
+            {
+                title: 'Confirm Logo Deletion',
+                confirmText: 'Delete',
+                variant: 'destructive',
+            }
+        );
+
+        if (!confirmed) return;
 
         try {
             await deleteLogoMutation.mutateAsync();

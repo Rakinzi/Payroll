@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDialog } from '@/hooks/use-dialog';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { PageProps } from '@/types';
