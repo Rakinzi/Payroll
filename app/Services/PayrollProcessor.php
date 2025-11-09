@@ -7,6 +7,8 @@ use App\Models\CenterPeriodStatus;
 use App\Models\Employee;
 use App\Models\Payslip;
 use App\Models\CostCenter;
+use App\Models\DefaultTransaction;
+use App\Models\CustomTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -314,7 +316,175 @@ class PayrollProcessor
             'is_recurring' => true,
         ]);
 
-        // TODO: Add other transaction types (NEC, medical aid, custom transactions, etc.)
+        // Get the accounting period
+        $period = AccountingPeriod::where('payroll_id', $payslip->payroll_id)
+            ->where('period_month', $payslip->period_month)
+            ->where('period_year', $payslip->period_year)
+            ->first();
+
+        if (!$period) {
+            Log::warning("No accounting period found for payslip {$payslip->id}");
+            return;
+        }
+
+        // Get exchange rate (TODO: Get actual exchange rate from system)
+        $exchangeRate = $payslip->exchange_rate ?? 1.0;
+
+        // Process default transactions for this period and center
+        $this->processDefaultTransactions($payslip, $period, $employee, $exchangeRate);
+
+        // Process custom transactions for this employee
+        $this->processCustomTransactions($payslip, $period, $employee, $exchangeRate);
+
+        // TODO: Add other transaction types (NEC, medical aid, etc.)
+    }
+
+    /**
+     * Process default transactions for payslip.
+     *
+     * @param Payslip $payslip
+     * @param AccountingPeriod $period
+     * @param Employee $employee
+     * @param float $exchangeRate
+     * @return void
+     */
+    protected function processDefaultTransactions(
+        Payslip $payslip,
+        AccountingPeriod $period,
+        Employee $employee,
+        float $exchangeRate
+    ): void {
+        // Fetch default transactions for this period and center
+        $defaultTransactions = DefaultTransaction::where('period_id', $period->period_id)
+            ->where('center_id', $employee->center_id)
+            ->with('transactionCode')
+            ->get();
+
+        foreach ($defaultTransactions as $transaction) {
+            if (!$transaction->transactionCode) {
+                continue;
+            }
+
+            $code = $transaction->transactionCode;
+
+            // Determine amounts based on currency
+            $amountZwl = 0;
+            $amountUsd = 0;
+
+            if ($transaction->transaction_currency === 'ZWL') {
+                $amountZwl = $transaction->employee_amount ?? 0;
+            } elseif ($transaction->transaction_currency === 'USD') {
+                $amountUsd = $transaction->employee_amount ?? 0;
+            } else {
+                // DEFAULT currency - apply based on payslip currency
+                if ($payslip->gross_salary_usd > 0) {
+                    $amountUsd = $transaction->employee_amount ?? 0;
+                }
+                if ($payslip->gross_salary_zwg > 0) {
+                    $amountZwl = $transaction->employee_amount ?? 0;
+                }
+            }
+
+            // Apply transaction based on its effect
+            $transactionType = match ($code->effect) {
+                1 => 'earning',      // Addition
+                -1 => 'deduction',   // Subtraction
+                default => 'earning',
+            };
+
+            // Add transaction to payslip
+            $payslip->addTransaction([
+                'description' => $code->code_name,
+                'transaction_type' => $transactionType,
+                'amount_zwg' => $amountZwl,
+                'amount_usd' => $amountUsd,
+                'is_taxable' => $code->apply_to_tax ?? false,
+                'is_recurring' => true,
+                'code_number' => $code->code_number,
+            ]);
+        }
+    }
+
+    /**
+     * Process custom transactions for payslip.
+     *
+     * @param Payslip $payslip
+     * @param AccountingPeriod $period
+     * @param Employee $employee
+     * @param float $exchangeRate
+     * @return void
+     */
+    protected function processCustomTransactions(
+        Payslip $payslip,
+        AccountingPeriod $period,
+        Employee $employee,
+        float $exchangeRate
+    ): void {
+        // Fetch custom transactions for this period that include this employee
+        $customTransactions = CustomTransaction::where('period_id', $period->period_id)
+            ->whereHas('employees', function ($query) use ($employee) {
+                $query->where('employee_id', $employee->id);
+            })
+            ->with(['transactionCodes', 'employees'])
+            ->get();
+
+        foreach ($customTransactions as $transaction) {
+            // Check if this is for all employees or specific employee
+            $appliesToEmployee = $transaction->employees->isEmpty() ||
+                $transaction->employees->contains('id', $employee->id);
+
+            if (!$appliesToEmployee) {
+                continue;
+            }
+
+            // Process each transaction code
+            foreach ($transaction->transactionCodes as $code) {
+                // Calculate amount based on currency preference
+                $currencies = ['USD', 'ZWL'];
+
+                foreach ($currencies as $currency) {
+                    // Skip if payslip doesn't use this currency
+                    if ($currency === 'USD' && $payslip->gross_salary_usd == 0) {
+                        continue;
+                    }
+                    if ($currency === 'ZWL' && $payslip->gross_salary_zwg == 0) {
+                        continue;
+                    }
+
+                    // Calculate prorated amount using the model's method
+                    $amount = $transaction->calculateAmountForEmployee(
+                        $employee,
+                        $currency,
+                        $exchangeRate
+                    );
+
+                    if ($amount == 0) {
+                        continue;
+                    }
+
+                    // Determine transaction type based on code effect
+                    $transactionType = match ($code->effect) {
+                        1 => 'earning',      // Addition
+                        -1 => 'deduction',   // Subtraction
+                        default => 'earning',
+                    };
+
+                    // Add transaction to payslip
+                    $amountZwl = $currency === 'ZWL' ? $amount : 0;
+                    $amountUsd = $currency === 'USD' ? $amount : 0;
+
+                    $payslip->addTransaction([
+                        'description' => $code->code_name . ' (Custom)',
+                        'transaction_type' => $transactionType,
+                        'amount_zwg' => $amountZwl,
+                        'amount_usd' => $amountUsd,
+                        'is_taxable' => $code->apply_to_tax ?? false,
+                        'is_recurring' => false,
+                        'code_number' => $code->code_number,
+                    ]);
+                }
+            }
+        }
     }
 
     /**
