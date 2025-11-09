@@ -50,11 +50,9 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-    // Welcome/Home page
+    // Redirect home to login
     Route::get('/', function () {
-        return Inertia::render('welcome', [
-            'canRegister' => Features::enabled(Features::registration()),
-        ]);
+        return redirect()->route('login');
     })->name('home');
 
     // Authentication Routes (override Fortify default login)
