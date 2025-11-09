@@ -671,8 +671,17 @@ Route::middleware([
                 return Inertia::render('admin/system-settings');
             })->name('admin.system-settings');
         });
+
+        // Leave Calculation API Routes
+        Route::prefix('leave-calculation')->group(function () {
+            Route::post('/calculate', [App\Http\Controllers\LeaveCalculationController::class, 'calculate'])
+                ->name('leave-calculation.calculate');
+            Route::post('/breakdown', [App\Http\Controllers\LeaveCalculationController::class, 'breakdown'])
+                ->name('leave-calculation.breakdown');
+        });
     });
 
     // Settings routes
     require __DIR__.'/settings.php';
 });
+
