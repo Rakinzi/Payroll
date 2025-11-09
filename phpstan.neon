@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app/Models/PayslipDownloadLink.php
+        - app/Models/PayslipNotification.php
+        - app/Models/ExchangeRateHistory.php
+        - app/Services/SMSNotificationService.php
+        - app/Services/CurrencyExchangeService.php
+        - app/Http/Controllers/SecurePayslipController.php
+        - app/Http/Controllers/CurrencyController.php
+    reportUnmatchedIgnoredErrors: false
