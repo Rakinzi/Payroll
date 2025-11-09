@@ -192,6 +192,15 @@ class Payslip extends Model
             'is_manual' => $data['is_manual'] ?? false,
             'notes' => $data['notes'] ?? null,
             'display_order' => ($maxOrder ?? -1) + 1,
+            // Calculation fields for short time, overtime, etc.
+            'days' => $data['days'] ?? null,
+            'hours' => $data['hours'] ?? null,
+            'rate' => $data['rate'] ?? null,
+            'quantity' => $data['quantity'] ?? null,
+            'calculation_basis' => $data['calculation_basis'] ?? null,
+            'is_calculated' => $data['is_calculated'] ?? false,
+            'manual_override' => $data['manual_override'] ?? false,
+            'calculation_metadata' => $data['calculation_metadata'] ?? null,
         ]);
 
         $this->recalculateTotals();

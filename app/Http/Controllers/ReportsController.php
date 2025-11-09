@@ -674,4 +674,79 @@ class ReportsController extends Controller
 
         return $pdf->download("employee_requisition_{$requisition->id}.pdf");
     }
+
+    /**
+     * Generate payroll summary report.
+     */
+    public function generatePayrollSummary(Request $request)
+    {
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'period_month' => 'required|integer|min:1|max:12',
+            'period_year' => 'required|integer|min:2020|max:2100',
+        ]);
+
+        $payroll = Payroll::findOrFail($validated['payroll_id']);
+
+        // Get all payslips for this period
+        $payslips = Payslip::with(['employee.department', 'transactions'])
+            ->where('payroll_id', $validated['payroll_id'])
+            ->where('period_month', $validated['period_month'])
+            ->where('period_year', $validated['period_year'])
+            ->get();
+
+        // Calculate totals
+        $summary = [
+            'total_employees' => $payslips->count(),
+            'gross_salary_zwg' => $payslips->sum('gross_salary_zwg'),
+            'gross_salary_usd' => $payslips->sum('gross_salary_usd'),
+            'total_deductions_zwg' => $payslips->sum('total_deductions_zwg'),
+            'total_deductions_usd' => $payslips->sum('total_deductions_usd'),
+            'net_salary_zwg' => $payslips->sum('net_salary_zwg'),
+            'net_salary_usd' => $payslips->sum('net_salary_usd'),
+        ];
+
+        // Group by department
+        $departmentBreakdown = $payslips->groupBy(function ($payslip) {
+            return $payslip->employee->department?->department_name ?? 'Unassigned';
+        })->map(function ($deptPayslips) {
+            return [
+                'count' => $deptPayslips->count(),
+                'gross_zwg' => $deptPayslips->sum('gross_salary_zwg'),
+                'gross_usd' => $deptPayslips->sum('gross_salary_usd'),
+                'net_zwg' => $deptPayslips->sum('net_salary_zwg'),
+                'net_usd' => $deptPayslips->sum('net_salary_usd'),
+            ];
+        });
+
+        // Transaction code breakdown
+        $transactionBreakdown = [];
+        foreach ($payslips as $payslip) {
+            foreach ($payslip->transactions as $transaction) {
+                $key = $transaction->description;
+                if (!isset($transactionBreakdown[$key])) {
+                    $transactionBreakdown[$key] = [
+                        'type' => $transaction->transaction_type,
+                        'amount_zwg' => 0,
+                        'amount_usd' => 0,
+                    ];
+                }
+                $transactionBreakdown[$key]['amount_zwg'] += $transaction->amount_zwg;
+                $transactionBreakdown[$key]['amount_usd'] += $transaction->amount_usd;
+            }
+        }
+
+        $monthName = date('F', mktime(0, 0, 0, $validated['period_month'], 1));
+
+        $pdf = Pdf::loadView('reports.payroll-summary', [
+            'payroll' => $payroll,
+            'summary' => $summary,
+            'departmentBreakdown' => $departmentBreakdown,
+            'transactionBreakdown' => $transactionBreakdown,
+            'period' => "{$monthName} {$validated['period_year']}",
+        ])
+        ->setPaper('a4', 'landscape');
+
+        return $pdf->download("payroll_summary_{$monthName}_{$validated['period_year']}.pdf");
+    }
 }

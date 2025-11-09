@@ -253,6 +253,15 @@ class PayslipController extends Controller
                             'code' => $transaction->transactionCode->code,
                             'description' => $transaction->transactionCode->description,
                         ] : null,
+                        // Calculation fields
+                        'days' => $transaction->days,
+                        'hours' => $transaction->hours,
+                        'rate' => $transaction->rate,
+                        'quantity' => $transaction->quantity,
+                        'calculation_basis' => $transaction->calculation_basis,
+                        'is_calculated' => $transaction->is_calculated,
+                        'manual_override' => $transaction->manual_override,
+                        'calculation_metadata' => $transaction->calculation_metadata,
                     ];
                 }),
                 'distribution_logs' => $payslip->distributionLogs->map(function ($log) {

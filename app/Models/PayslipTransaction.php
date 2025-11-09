@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PayslipTransaction extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
 
     protected $fillable = [
         'payslip_id',
@@ -22,6 +23,15 @@ class PayslipTransaction extends Model
         'is_recurring',
         'is_manual',
         'notes',
+        // Calculation fields
+        'days',
+        'hours',
+        'rate',
+        'quantity',
+        'calculation_basis',
+        'is_calculated',
+        'manual_override',
+        'calculation_metadata',
     ];
 
     protected $casts = [
@@ -31,6 +41,14 @@ class PayslipTransaction extends Model
         'is_taxable' => 'boolean',
         'is_recurring' => 'boolean',
         'is_manual' => 'boolean',
+        // Calculation field casts
+        'days' => 'decimal:2',
+        'hours' => 'decimal:2',
+        'rate' => 'decimal:2',
+        'quantity' => 'decimal:2',
+        'is_calculated' => 'boolean',
+        'manual_override' => 'boolean',
+        'calculation_metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -143,6 +161,15 @@ class PayslipTransaction extends Model
             'is_recurring' => 'nullable|boolean',
             'is_manual' => 'nullable|boolean',
             'notes' => 'nullable|string|max:500',
+            // Calculation fields
+            'days' => 'nullable|numeric|min:0',
+            'hours' => 'nullable|numeric|min:0',
+            'rate' => 'nullable|numeric|min:0',
+            'quantity' => 'nullable|numeric|min:0',
+            'calculation_basis' => 'nullable|in:days,hours,amount,percentage',
+            'is_calculated' => 'nullable|boolean',
+            'manual_override' => 'nullable|boolean',
+            'calculation_metadata' => 'nullable|array',
         ];
     }
 }

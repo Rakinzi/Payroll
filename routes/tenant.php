@@ -404,6 +404,7 @@ Route::middleware([
             Route::post('/{period}/run', [\App\Http\Controllers\AccountingPeriodController::class, 'run'])->name('run');
             Route::post('/{period}/refresh', [\App\Http\Controllers\AccountingPeriodController::class, 'refresh'])->name('refresh');
             Route::post('/{period}/close', [\App\Http\Controllers\AccountingPeriodController::class, 'close'])->name('close');
+            Route::post('/{period}/reopen', [\App\Http\Controllers\AccountingPeriodController::class, 'reopen'])->name('reopen');
 
             // AJAX endpoints
             Route::get('/{period}/status', [\App\Http\Controllers\AccountingPeriodController::class, 'status'])->name('status');
@@ -611,6 +612,9 @@ Route::middleware([
                 // Employee Requisition
                 Route::post('/employee-requisition/generate', [ReportsController::class, 'generateEmployeeRequisition'])->name('employee-requisition.generate');
                 Route::get('/employee-requisition/{requisition}/download', [ReportsController::class, 'downloadEmployeeRequisition'])->name('employee-requisition.download');
+
+                // Payroll Summary
+                Route::post('/payroll-summary/generate', [ReportsController::class, 'generatePayrollSummary'])->name('payroll-summary.generate');
             });
         });
 
