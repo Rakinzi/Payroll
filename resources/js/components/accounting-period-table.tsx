@@ -320,7 +320,7 @@ export function AccountingPeriodTable({
                                         <TableCell>
                                             <Select
                                                 value={getPeriodCurrency(period.period_id)}
-                                                onValueChange={(value: any) =>
+                                                onValueChange={(value: string) =>
                                                     handleCurrencyChange(period.period_id, value)
                                                 }
                                                 disabled={

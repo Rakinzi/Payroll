@@ -46,10 +46,7 @@ import { useState, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
-    notices: {
-        data: Notice[];
-        links: any[];
-        meta: any;
+    notices: PaginatedData<Notice>;
     };
     filters: {
         search?: string;
@@ -156,7 +153,7 @@ export default function NoticesIndex({ notices, filters, maxFileSize, allowedExt
                         description: 'Notice created successfully',
                     });
                 },
-                onError: (error: any) => {
+                onError: (error: Error) => {
                     toast({
                         title: 'Error',
                         description: error?.message || 'Failed to create notice',
@@ -197,7 +194,7 @@ export default function NoticesIndex({ notices, filters, maxFileSize, allowedExt
                         description: 'Notice updated successfully',
                     });
                 },
-                onError: (error: any) => {
+                onError: (error: Error) => {
                     toast({
                         title: 'Error',
                         description: error?.message || 'Failed to update notice',
@@ -224,7 +221,7 @@ export default function NoticesIndex({ notices, filters, maxFileSize, allowedExt
                         description: 'Notice deleted successfully',
                     });
                 },
-                onError: (error: any) => {
+                onError: (error: Error) => {
                     toast({
                         title: 'Error',
                         description: error?.message || 'Failed to delete notice',
