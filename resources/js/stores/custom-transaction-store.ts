@@ -17,6 +17,13 @@ interface CustomTransactionForm {
     transaction_codes: number[];
 }
 
+interface TransactionEstimate {
+    base_amount?: number;
+    calculated_amount?: number;
+    work_ratio?: number;
+    [key: string]: unknown;
+}
+
 interface CustomTransactionState {
     // Filters
     filters: TransactionFilter;
@@ -49,8 +56,8 @@ interface CustomTransactionState {
     setShowDetailsDialog: (show: boolean) => void;
 
     // Calculated estimate
-    estimate: any | null;
-    setEstimate: (estimate: any | null) => void;
+    estimate: TransactionEstimate | null;
+    setEstimate: (estimate: TransactionEstimate | null) => void;
 
     // Reset all state
     reset: () => void;

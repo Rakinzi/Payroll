@@ -245,11 +245,11 @@ export function useCompanyBankDetails() {
 }
 
 // Generic CRUD mutations
-export function useCreateOrganizationalItem(type: string, endpoint: string) {
+export function useCreateOrganizationalItem<T = unknown>(type: string, endpoint: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: any) => {
+        mutationFn: async (data: T) => {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -274,11 +274,11 @@ export function useCreateOrganizationalItem(type: string, endpoint: string) {
     });
 }
 
-export function useUpdateOrganizationalItem(type: string, endpoint: string, id: string) {
+export function useUpdateOrganizationalItem<T = unknown>(type: string, endpoint: string, id: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: any) => {
+        mutationFn: async (data: T) => {
             const response = await fetch(`${endpoint}/${id}`, {
                 method: 'PUT',
                 headers: {

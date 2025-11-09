@@ -21,11 +21,17 @@ import {
 } from '@/hooks/queries/use-profile-settings';
 import { useProfileSettingsStore } from '@/stores/profile-settings-store';
 import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, Department, Position } from '@/types';
 import { Head } from '@inertiajs/react';
 import { User, Building2, ImageIcon, Lock } from 'lucide-react';
 import { useState, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
+
+interface ProfilePreferences {
+    theme?: string;
+    notifications?: boolean;
+    [key: string]: unknown;
+}
 
 interface Props {
     profile: {
@@ -35,7 +41,7 @@ interface Props {
         signature_path: string | null;
         avatar_url: string | null;
         signature_url: string | null;
-        preferences: any;
+        preferences: ProfilePreferences | null;
     };
     employee: {
         id: string;
@@ -61,8 +67,8 @@ interface Props {
         payment_basis: string;
         title: string;
     } | null;
-    departments: any[];
-    positions: any[];
+    departments: Department[];
+    positions: Position[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -108,7 +114,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
             onSuccess: () => {
                 toast({ title: 'Success', description: 'Profile updated successfully' });
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
                 toast({
                     title: 'Error',
                     description: error?.message || 'Failed to update profile',
@@ -145,7 +151,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
                     onSuccess: () => {
                         toast({ title: 'Success', description: 'Avatar updated successfully' });
                     },
-                    onError: (error: any) => {
+                    onError: (error: Error) => {
                         toast({
                             title: 'Error',
                             description: error?.message || 'Failed to update avatar',
@@ -168,7 +174,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
                     new_password_confirmation: '',
                 });
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
                 toast({
                     title: 'Error',
                     description: error?.message || 'Failed to update password',
@@ -189,7 +195,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
                     new_password_confirmation: '',
                 });
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
                 toast({
                     title: 'Error',
                     description: error?.message || 'Failed to update payslip password',
@@ -205,7 +211,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
             onSuccess: () => {
                 toast({ title: 'Success', description: 'Bank details updated successfully' });
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
                 toast({
                     title: 'Error',
                     description: error?.message || 'Failed to update bank details',
@@ -227,7 +233,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
                     </p>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+                <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value)}>
                     <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="personal">
                             <User className="mr-2 h-4 w-4" />
@@ -327,7 +333,7 @@ export default function ProfileEdit({ profile, employee, departments, positions 
                                             <Label>Gender *</Label>
                                             <Select
                                                 value={personalForm.gender}
-                                                onValueChange={(value: any) =>
+                                                onValueChange={(value: string) =>
                                                     setPersonalForm({ ...personalForm, gender: value })
                                                 }
                                             >

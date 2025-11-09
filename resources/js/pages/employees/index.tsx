@@ -18,7 +18,7 @@ import {
 } from '@/hooks/queries/use-employees';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Pencil, Plus, Trash2, UserCheck, UserMinus } from 'lucide-react';
 import { useState } from 'react';
@@ -66,11 +66,7 @@ const useTerminateDialog = create<TerminateDialogStore>((set) => ({
 }));
 
 interface Props {
-    employees: {
-        data: Employee[];
-        links: any[];
-        meta: any;
-    };
+    employees: PaginatedData<Employee>;
     filters?: {
         search?: string;
         status?: string;
@@ -234,7 +230,7 @@ export default function EmployeeListPage({ employees, filters }: Props) {
                 {/* Pagination */}
                 {employees.links && employees.links.length > 3 && (
                     <div className="flex justify-center gap-2">
-                        {employees.links.map((link: any, index: number) => (
+                        {employees.links.map((link: PaginationLink, index: number) => (
                             <Button
                                 key={index}
                                 variant={link.active ? 'default' : 'outline'}

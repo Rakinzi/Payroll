@@ -44,7 +44,7 @@ import {
 } from '@/hooks/queries/use-tax-credits';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { MoreHorizontal, Pencil, Plus, Trash2, Lock, Info } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -72,11 +72,7 @@ const useTaxCreditDialog = create<TaxCreditDialogStore>((set) => ({
 }));
 
 interface Props {
-    taxCredits: {
-        data: TaxCredit[];
-        links: any[];
-        meta: any;
-    };
+    taxCredits: PaginatedData<TaxCredit>;
     filters?: {
         search?: string;
         currency?: string;
@@ -295,7 +291,7 @@ export default function TaxCreditsPage({ taxCredits, filters, currencies, period
                 {/* Pagination */}
                 {taxCredits.links && taxCredits.links.length > 3 && (
                     <div className="flex justify-center gap-2">
-                        {taxCredits.links.map((link: any, index: number) => (
+                        {taxCredits.links.map((link: PaginationLink, index: number) => (
                             <Button
                                 key={index}
                                 variant={link.active ? 'default' : 'outline'}

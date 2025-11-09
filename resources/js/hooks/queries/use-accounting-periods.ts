@@ -60,11 +60,18 @@ export interface GeneratePeriodsData {
     year: number;
 }
 
+export interface PeriodFilters {
+    year?: number;
+    status?: string;
+    payroll_id?: string;
+    [key: string]: unknown;
+}
+
 // Query Keys
 export const accountingPeriodKeys = {
     all: ['accounting-periods'] as const,
     lists: () => [...accountingPeriodKeys.all, 'list'] as const,
-    list: (filters: any) => [...accountingPeriodKeys.lists(), filters] as const,
+    list: (filters: PeriodFilters) => [...accountingPeriodKeys.lists(), filters] as const,
     details: () => [...accountingPeriodKeys.all, 'detail'] as const,
     detail: (id: number) => [...accountingPeriodKeys.details(), id] as const,
     status: (id: number) => [...accountingPeriodKeys.all, 'status', id] as const,
