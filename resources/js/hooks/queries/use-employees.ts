@@ -79,7 +79,7 @@ export interface EmployeeBankDetail {
     account_number: string;
     account_name?: string;
     account_type: 'Current' | 'Savings' | 'FCA';
-    account_currency: 'USD' | 'ZWL' | 'ZiG';
+    account_currency: 'USD' | 'ZWG' | 'ZiG';
     capacity: number;
     is_default: boolean;
     is_active: boolean;

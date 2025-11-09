@@ -175,7 +175,7 @@ class CenterPeriodStatus extends Model
         return [
             'period_id' => 'required|exists:payroll_accounting_periods,period_id',
             'center_id' => 'required|exists:cost_centers,id',
-            'period_currency' => 'required|in:ZWL,USD,DEFAULT',
+            'period_currency' => 'required|in:ZWG,USD,DEFAULT',
             'period_run_date' => 'nullable|date',
             'pay_run_date' => 'nullable|date|after:period_run_date',
             'is_closed_confirmed' => 'nullable|boolean',

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('payroll_period')->default(12); // 12=Monthly, 26=Bi-weekly, 52=Weekly
             $table->date('start_date');
             $table->string('tax_method', 100)->default('FDS Average');
-            $table->string('payroll_currency', 100)->default('USD + ZWL');
+            $table->string('payroll_currency', 100)->default('USD + ZWG');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

@@ -96,7 +96,7 @@ export const useDefaultTransactionStore = create<DefaultTransactionState>()(
                         (row.employer_amount === undefined || row.employer_amount >= 0) &&
                         (row.hours_worked === undefined || row.hours_worked >= 0) &&
                         (row.transaction_effect === '+' || row.transaction_effect === '-') &&
-                        (row.transaction_currency === 'ZWL' || row.transaction_currency === 'USD')
+                        (row.transaction_currency === 'ZWG' || row.transaction_currency === 'USD')
                 );
             },
 

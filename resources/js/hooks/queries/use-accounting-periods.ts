@@ -8,7 +8,7 @@ export interface CenterPeriodStatus {
     period_id: number;
     center_id: string;
     center_name?: string;
-    period_currency: 'ZWL' | 'USD' | 'DEFAULT';
+    period_currency: 'ZWG' | 'USD' | 'DEFAULT';
     period_run_date: string | null;
     pay_run_date: string | null;
     is_closed_confirmed: boolean | null;
@@ -40,7 +40,7 @@ export interface AccountingPeriod {
 }
 
 export interface PeriodRunData {
-    currency: 'ZWL' | 'USD' | 'DEFAULT';
+    currency: 'ZWG' | 'USD' | 'DEFAULT';
 }
 
 export interface PeriodSummary {

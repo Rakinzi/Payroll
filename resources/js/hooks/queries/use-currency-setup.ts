@@ -50,7 +50,7 @@ export interface ExchangeRateData {
     is_active: boolean;
 }
 
-export const CURRENCIES = ['USD', 'ZWL', 'ZWG', 'RTGS'] as const;
+export const CURRENCIES = ['USD', 'ZWG', 'ZWG', 'RTGS'] as const;
 export type Currency = typeof CURRENCIES[number];
 
 // Query keys factory

@@ -102,7 +102,7 @@ class Payroll extends Model
      */
     public function getCurrencyDisplayAttribute(): string
     {
-        return str_replace('ZWL', 'ZWG', $this->payroll_currency);
+        return str_replace('ZWG', 'ZWG', $this->payroll_currency);
     }
 
     /**
@@ -215,9 +215,9 @@ class Payroll extends Model
     public static function getSupportedCurrencies(): array
     {
         return [
-            'USD + ZWL',
+            'USD + ZWG',
             'USD Only',
-            'ZWL Only',
+            'ZWG Only',
         ];
     }
 }

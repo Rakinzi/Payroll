@@ -132,7 +132,7 @@ function PayrollFormDialog() {
     );
     const [taxMethod, setTaxMethod] = useState(selectedPayroll?.tax_method || 'FDS Average');
     const [payrollCurrency, setPayrollCurrency] = useState(
-        selectedPayroll?.payroll_currency || 'USD + ZWL'
+        selectedPayroll?.payroll_currency || 'USD + ZWG'
     );
     const [description, setDescription] = useState(selectedPayroll?.description || '');
     const [isActive, setIsActive] = useState(selectedPayroll?.is_active ?? true);
@@ -186,7 +186,7 @@ function PayrollFormDialog() {
         setPayrollPeriod(12);
         setStartDate(new Date().toISOString().split('T')[0]);
         setTaxMethod('FDS Average');
-        setPayrollCurrency('USD + ZWL');
+        setPayrollCurrency('USD + ZWG');
         setDescription('');
         setIsActive(true);
     };

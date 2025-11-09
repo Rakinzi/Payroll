@@ -170,14 +170,14 @@ class CustomTransaction extends Model
 
         // Determine base amount
         if ($this->use_basic) {
-            $base_amount = $currency === 'ZWL'
+            $base_amount = $currency === 'ZWG'
                          ? $employee->basic_salary
                          : $employee->basic_salary_usd;
         } else {
             $base_amount = $this->base_amount ?? 0;
 
             // Convert to target currency if needed
-            if ($currency === 'ZWL') {
+            if ($currency === 'ZWG') {
                 $base_amount *= $exchangeRate;
             }
         }

@@ -42,7 +42,7 @@ class CompanyBankDetail extends Model
      * Currencies
      */
     const CURRENCY_USD = 'USD';
-    const CURRENCY_ZWL = 'ZWL';
+    const CURRENCY_ZWG = 'ZWG';
     const CURRENCY_RTGS = 'RTGS';
 
     /**
@@ -152,7 +152,7 @@ class CompanyBankDetail extends Model
             'branch_code' => 'required|string|max:10',
             'account_number' => 'required|string|min:10|max:20',
             'account_type' => 'required|in:Current,Nostro,FCA',
-            'account_currency' => 'required|in:RTGS,ZWL,USD',
+            'account_currency' => 'required|in:RTGS,ZWG,USD',
             'is_default' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -196,7 +196,7 @@ class CompanyBankDetail extends Model
     {
         return [
             self::CURRENCY_USD,
-            self::CURRENCY_ZWL,
+            self::CURRENCY_ZWG,
             self::CURRENCY_RTGS,
         ];
     }

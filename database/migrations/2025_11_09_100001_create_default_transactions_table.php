@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('employee_amount', 15, 2);
             $table->decimal('employer_amount', 15, 2)->default(0);
             $table->decimal('hours_worked', 8, 2)->default(0);
-            $table->enum('transaction_currency', ['ZWL', 'USD']);
+            $table->enum('transaction_currency', ['ZWG', 'USD']);
             $table->timestamps();
 
             // Foreign keys

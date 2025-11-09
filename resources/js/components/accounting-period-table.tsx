@@ -184,7 +184,7 @@ export function AccountingPeriodTable({
     // Handle currency change
     const { mutate: updateCurrency } = useUpdatePeriodCurrency(0);
 
-    const handleCurrencyChange = (periodId: number, currency: 'ZWL' | 'USD' | 'DEFAULT') => {
+    const handleCurrencyChange = (periodId: number, currency: 'ZWG' | 'USD' | 'DEFAULT') => {
         setPeriodCurrency(periodId, currency);
         updateCurrency(
             { currency },
@@ -334,7 +334,7 @@ export function AccountingPeriodTable({
                                                 <SelectContent>
                                                     <SelectItem value="DEFAULT">Multi</SelectItem>
                                                     <SelectItem value="USD">USD</SelectItem>
-                                                    <SelectItem value="ZWL">ZWG</SelectItem>
+                                                    <SelectItem value="ZWG">ZWG</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>

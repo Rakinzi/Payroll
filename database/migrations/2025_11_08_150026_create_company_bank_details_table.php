@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('branch_code', 10);
             $table->text('account_number'); // Encrypted
             $table->enum('account_type', ['Current', 'Nostro', 'FCA']);
-            $table->enum('account_currency', ['RTGS', 'ZWL', 'USD']);
+            $table->enum('account_currency', ['RTGS', 'ZWG', 'USD']);
             $table->boolean('is_default')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

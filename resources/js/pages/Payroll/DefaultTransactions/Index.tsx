@@ -270,7 +270,7 @@ export default function DefaultTransactionsIndex({
                                         {index === 0 && <Label>Currency</Label>}
                                         <Select
                                             value={row.transaction_currency}
-                                            onValueChange={(value: 'ZWL' | 'USD') =>
+                                            onValueChange={(value: 'ZWG' | 'USD') =>
                                                 updateRow(row.id, { transaction_currency: value })
                                             }
                                         >
@@ -279,7 +279,7 @@ export default function DefaultTransactionsIndex({
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="USD">USD</SelectItem>
-                                                <SelectItem value="ZWL">ZWG</SelectItem>
+                                                <SelectItem value="ZWG">ZWG</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

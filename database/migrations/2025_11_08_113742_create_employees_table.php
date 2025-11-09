@@ -52,7 +52,7 @@ return new class extends Migration
             $table->enum('payment_method', ['bank_transfer', 'cash', 'cheque'])->default('bank_transfer');
 
             // Compensation & Benefits
-            $table->decimal('basic_salary', 15, 2)->default(0); // ZWL salary
+            $table->decimal('basic_salary', 15, 2)->default(0); // ZWG salary
             $table->decimal('basic_salary_usd', 15, 2)->default(0); // USD salary
             $table->decimal('leave_entitlement', 5, 2)->nullable(); // Annual leave days
             $table->decimal('leave_accrual', 5, 2)->nullable(); // Leave accrual rate
@@ -64,7 +64,7 @@ return new class extends Migration
             $table->integer('vehicle_engine_capacity')->nullable(); // For vehicle benefit tax
 
             // Currency Splitting
-            $table->decimal('zwl_percentage', 5, 2)->default(0); // Percentage of salary in ZWL
+            $table->decimal('zwl_percentage', 5, 2)->default(0); // Percentage of salary in ZWG
             $table->decimal('usd_percentage', 5, 2)->default(100); // Percentage of salary in USD
 
             // NEC Integration

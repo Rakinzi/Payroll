@@ -104,7 +104,7 @@ function BankDetailFormDialog() {
     const [accountType, setAccountType] = useState<'Current' | 'Nostro' | 'FCA'>(
         selectedBankDetail?.account_type || 'Current'
     );
-    const [accountCurrency, setAccountCurrency] = useState<'RTGS' | 'ZWL' | 'USD'>(
+    const [accountCurrency, setAccountCurrency] = useState<'RTGS' | 'ZWG' | 'USD'>(
         selectedBankDetail?.account_currency || 'USD'
     );
     const [isDefault, setIsDefault] = useState(selectedBankDetail?.is_default || false);
@@ -255,7 +255,7 @@ function BankDetailFormDialog() {
                                 <Select
                                     value={accountCurrency}
                                     onValueChange={(value) =>
-                                        setAccountCurrency(value as 'RTGS' | 'ZWL' | 'USD')
+                                        setAccountCurrency(value as 'RTGS' | 'ZWG' | 'USD')
                                     }
                                 >
                                     <SelectTrigger id="account_currency">
@@ -263,7 +263,7 @@ function BankDetailFormDialog() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="USD">USD - US Dollar</SelectItem>
-                                        <SelectItem value="ZWL">ZWL - Zimbabwe Dollar</SelectItem>
+                                        <SelectItem value="ZWG">ZWG - Zimbabwe Dollar</SelectItem>
                                         <SelectItem value="RTGS">
                                             RTGS - Real Time Gross Settlement
                                         </SelectItem>

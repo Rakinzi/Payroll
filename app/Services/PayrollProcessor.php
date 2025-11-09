@@ -231,14 +231,14 @@ class PayrollProcessor
         } elseif ($currency === 'USD') {
             $basicSalaryZwl = 0;
             $basicSalaryUsd = $basicSalaryUsd > 0 ? $basicSalaryUsd : $basicSalaryZwl;
-        } elseif ($currency === 'ZWL') {
+        } elseif ($currency === 'ZWG') {
             $basicSalaryUsd = 0;
             $basicSalaryZwl = $basicSalaryZwl > 0 ? $basicSalaryZwl : $basicSalaryUsd;
         }
 
         // Calculate tax
         $taxCalculationUsd = $this->taxCalculator->calculateTax($employee, $basicSalaryUsd, 'USD');
-        $taxCalculationZwl = $this->taxCalculator->calculateTax($employee, $basicSalaryZwl, 'ZWL');
+        $taxCalculationZwl = $this->taxCalculator->calculateTax($employee, $basicSalaryZwl, 'ZWG');
 
         // Create payslip
         $payslip = $this->createPayslip($period, $employee, [
@@ -371,7 +371,7 @@ class PayrollProcessor
             $amountZwl = 0;
             $amountUsd = 0;
 
-            if ($transaction->transaction_currency === 'ZWL') {
+            if ($transaction->transaction_currency === 'ZWG') {
                 $amountZwl = $transaction->employee_amount ?? 0;
             } elseif ($transaction->transaction_currency === 'USD') {
                 $amountUsd = $transaction->employee_amount ?? 0;
@@ -440,14 +440,14 @@ class PayrollProcessor
             // Process each transaction code
             foreach ($transaction->transactionCodes as $code) {
                 // Calculate amount based on currency preference
-                $currencies = ['USD', 'ZWL'];
+                $currencies = ['USD', 'ZWG'];
 
                 foreach ($currencies as $currency) {
                     // Skip if payslip doesn't use this currency
                     if ($currency === 'USD' && $payslip->gross_salary_usd == 0) {
                         continue;
                     }
-                    if ($currency === 'ZWL' && $payslip->gross_salary_zwg == 0) {
+                    if ($currency === 'ZWG' && $payslip->gross_salary_zwg == 0) {
                         continue;
                     }
 
@@ -470,7 +470,7 @@ class PayrollProcessor
                     };
 
                     // Add transaction to payslip
-                    $amountZwl = $currency === 'ZWL' ? $amount : 0;
+                    $amountZwl = $currency === 'ZWG' ? $amount : 0;
                     $amountUsd = $currency === 'USD' ? $amount : 0;
 
                     $payslip->addTransaction([

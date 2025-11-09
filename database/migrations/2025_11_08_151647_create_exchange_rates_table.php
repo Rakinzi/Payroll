@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('exchange_rates', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('from_currency', 3); // USD, ZWL, ZWG, etc.
+            $table->string('from_currency', 3); // USD, ZWG, ZWG, etc.
             $table->string('to_currency', 3);
             $table->decimal('rate', 15, 6); // Precise exchange rate
             $table->date('effective_date');

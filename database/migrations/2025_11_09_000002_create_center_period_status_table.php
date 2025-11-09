@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('status_id');
             $table->unsignedBigInteger('period_id');
             $table->uuid('center_id');
-            $table->enum('period_currency', ['ZWL', 'USD', 'DEFAULT'])->default('DEFAULT');
+            $table->enum('period_currency', ['ZWG', 'USD', 'DEFAULT'])->default('DEFAULT');
             $table->dateTime('period_run_date')->nullable();
             $table->dateTime('pay_run_date')->nullable();
             $table->boolean('is_closed_confirmed')->nullable();

@@ -10,7 +10,7 @@ export interface CompanyBankDetail {
     account_number: string; // Decrypted
     masked_account_number: string;
     account_type: 'Current' | 'Nostro' | 'FCA';
-    account_currency: 'RTGS' | 'ZWL' | 'USD';
+    account_currency: 'RTGS' | 'ZWG' | 'USD';
     is_default: boolean;
     is_active: boolean;
     cost_center?: {
@@ -28,12 +28,12 @@ export interface CompanyBankDetailData {
     branch_code: string;
     account_number: string;
     account_type: 'Current' | 'Nostro' | 'FCA';
-    account_currency: 'RTGS' | 'ZWL' | 'USD';
+    account_currency: 'RTGS' | 'ZWG' | 'USD';
     is_default: boolean;
 }
 
 export const ACCOUNT_TYPES = ['Current', 'Nostro', 'FCA'] as const;
-export const CURRENCIES = ['RTGS', 'ZWL', 'USD'] as const;
+export const CURRENCIES = ['RTGS', 'ZWG', 'USD'] as const;
 
 export const ACCOUNT_TYPE_COLORS = {
     Current: 'default',
@@ -43,7 +43,7 @@ export const ACCOUNT_TYPE_COLORS = {
 
 export const CURRENCY_COLORS = {
     USD: 'default',
-    ZWL: 'secondary',
+    ZWG: 'secondary',
     RTGS: 'outline',
 } as const;
 

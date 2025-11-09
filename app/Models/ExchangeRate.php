@@ -31,7 +31,7 @@ class ExchangeRate extends Model
      * Supported currencies.
      */
     const CURRENCY_USD = 'USD';
-    const CURRENCY_ZWL = 'ZWL';
+    const CURRENCY_ZWG = 'ZWG';
     const CURRENCY_ZWG = 'ZWG';
     const CURRENCY_RTGS = 'RTGS';
 
@@ -143,7 +143,7 @@ class ExchangeRate extends Model
     {
         return [
             self::CURRENCY_USD,
-            self::CURRENCY_ZWL,
+            self::CURRENCY_ZWG,
             self::CURRENCY_ZWG,
             self::CURRENCY_RTGS,
         ];
