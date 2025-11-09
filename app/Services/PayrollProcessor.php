@@ -296,25 +296,29 @@ class PayrollProcessor
      */
     protected function processTransactions(Payslip $payslip, Employee $employee): void
     {
-        // Add basic salary transaction
-        $payslip->addTransaction([
-            'description' => 'Basic Salary',
-            'transaction_type' => 'earning',
-            'amount_zwg' => $payslip->gross_salary_zwg,
-            'amount_usd' => $payslip->gross_salary_usd,
-            'is_taxable' => true,
-            'is_recurring' => true,
-        ]);
+        // Add basic salary transaction (only if employee has a salary)
+        if ($payslip->gross_salary_zwg > 0 || $payslip->gross_salary_usd > 0) {
+            $payslip->addTransaction([
+                'description' => 'Basic Salary',
+                'transaction_type' => 'earning',
+                'amount_zwg' => $payslip->gross_salary_zwg,
+                'amount_usd' => $payslip->gross_salary_usd,
+                'is_taxable' => true,
+                'is_recurring' => true,
+            ]);
+        }
 
-        // Add tax deduction transaction
-        $payslip->addTransaction([
-            'description' => 'PAYE Tax',
-            'transaction_type' => 'deduction',
-            'amount_zwg' => $payslip->total_deductions_zwg,
-            'amount_usd' => $payslip->total_deductions_usd,
-            'is_taxable' => false,
-            'is_recurring' => true,
-        ]);
+        // Add tax deduction transaction (only if there's tax to deduct)
+        if ($payslip->total_deductions_zwg > 0 || $payslip->total_deductions_usd > 0) {
+            $payslip->addTransaction([
+                'description' => 'PAYE Tax',
+                'transaction_type' => 'deduction',
+                'amount_zwg' => $payslip->total_deductions_zwg,
+                'amount_usd' => $payslip->total_deductions_usd,
+                'is_taxable' => false,
+                'is_recurring' => true,
+            ]);
+        }
 
         // Get the accounting period
         $period = AccountingPeriod::where('payroll_id', $payslip->payroll_id)
