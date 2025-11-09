@@ -36,6 +36,15 @@ export interface PayslipTransaction {
     is_recurring: boolean;
     is_manual: boolean;
     transaction_code?: TransactionCode;
+    // Calculation fields
+    days?: number;
+    hours?: number;
+    rate?: number;
+    quantity?: number;
+    calculation_basis?: 'days' | 'hours' | 'amount' | 'percentage';
+    is_calculated?: boolean;
+    manual_override?: boolean;
+    calculation_metadata?: Record<string, unknown>;
 }
 
 export interface DistributionLog {
@@ -103,6 +112,15 @@ export interface TransactionFormData {
     is_recurring?: boolean;
     is_manual?: boolean;
     notes?: string;
+    // Calculation fields for short time, overtime, etc.
+    days?: number;
+    hours?: number;
+    rate?: number;
+    quantity?: number;
+    calculation_basis?: 'days' | 'hours' | 'amount' | 'percentage';
+    is_calculated?: boolean;
+    manual_override?: boolean;
+    calculation_metadata?: Record<string, unknown>;
 }
 
 export interface DistributeFormData {
