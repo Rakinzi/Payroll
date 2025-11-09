@@ -4,6 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Building2, Users, UserX, UserCog } from 'lucide-react';
+import NoticesWidget from '@/components/notices-widget';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -172,6 +173,9 @@ export default function Dashboard({ stats }: DashboardProps) {
                         </Card>
                     )}
                 </div>
+
+                {/* Notices Widget */}
+                <NoticesWidget limit={5} />
             </div>
         </AppLayout>
     );
