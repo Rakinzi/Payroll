@@ -54,11 +54,17 @@ export interface CalculateEstimateInput {
     employee_id?: string;
 }
 
+export interface CustomTransactionFilters {
+    period_id?: number;
+    center_id?: string;
+    [key: string]: unknown;
+}
+
 // Query Keys
 export const customTransactionKeys = {
     all: ['custom-transactions'] as const,
     lists: () => [...customTransactionKeys.all, 'list'] as const,
-    list: (filters: any) => [...customTransactionKeys.lists(), filters] as const,
+    list: (filters: CustomTransactionFilters) => [...customTransactionKeys.lists(), filters] as const,
     details: () => [...customTransactionKeys.all, 'detail'] as const,
     detail: (id: number) => [...customTransactionKeys.details(), id] as const,
     employees: (id: number) => [...customTransactionKeys.all, 'employees', id] as const,
