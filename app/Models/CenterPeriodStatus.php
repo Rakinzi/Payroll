@@ -122,6 +122,20 @@ class CenterPeriodStatus extends Model
     }
 
     /**
+     * Reopen a closed period (keeps run dates but reopens for edits).
+     */
+    public function reopen(): bool
+    {
+        if (!$this->is_closed_confirmed) {
+            return false; // Already open
+        }
+
+        return $this->update([
+            'is_closed_confirmed' => false,
+        ]);
+    }
+
+    /**
      * Reset period status (undo run).
      */
     public function reset(): bool

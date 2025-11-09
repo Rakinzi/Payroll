@@ -167,6 +167,51 @@ class AccountingPeriodController extends Controller
     }
 
     /**
+     * Reopen a closed period for the user's center.
+     */
+    public function reopen(Request $request, AccountingPeriod $period)
+    {
+        // Authorization check - only users who can close can also reopen
+        if (!$period->canBeClosedBy(Auth::user())) {
+            return back()->with('error', 'You do not have permission to reopen this period.');
+        }
+
+        try {
+            // Get user's center
+            $centerId = Auth::user()->center_id;
+
+            // Get center status
+            $centerStatus = $period->getCenterStatus($centerId);
+
+            if (!$centerStatus) {
+                return back()->with('error', 'Period status not found for your center.');
+            }
+
+            if (!$centerStatus->is_closed_confirmed) {
+                return back()->with('info', 'Period is already open.');
+            }
+
+            // Reopen the period
+            $centerStatus->reopen();
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => ActivityLog::ACTION_UPDATE,
+                'description' => "Reopened accounting period: {$period->month_name} {$period->year} for center {$centerId}",
+                'model_type' => 'AccountingPeriod',
+                'model_id' => $period->period_id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return back()->with('success', 'Period reopened successfully. You can now make edits to payslips.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to reopen period: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Get status information for a period (AJAX endpoint).
      */
     public function status(AccountingPeriod $period)
