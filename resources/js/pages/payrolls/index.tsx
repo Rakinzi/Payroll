@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { create } from 'zustand';
+import { useDialog } from '@/hooks/use-dialog';
 import AppLayout from '@/components/layouts/app-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -399,12 +400,13 @@ function AssignEmployeesDialog() {
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
 
     const assignMutation = useAssignEmployees(selectedPayroll?.id || '');
+    const dialog = useDialog();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (selectedEmployeeIds.length === 0) {
-            alert('Please select at least one employee');
+            dialog.alert('Please select at least one employee', 'Validation Error');
             return;
         }
 

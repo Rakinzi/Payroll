@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useDialog } from '@/hooks/use-dialog';
 import { useState } from 'react';
 import { create } from 'zustand';
 import AppLayout from '@/components/layouts/app-layout';
@@ -98,13 +99,14 @@ function UploadFileDialog() {
     const [importType, setImportType] = useState<string>('employees');
 
     const uploadMutation = useUploadFile();
+    const dialog = useDialog();
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
             setSelectedFile(file);
         } else {
-            alert('Please select a valid CSV file');
+            dialog.alert('Please select a valid CSV file', 'Invalid File Type');
         }
     };
 

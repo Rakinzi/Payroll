@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useDialog } from '@/hooks/use-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
@@ -58,9 +59,16 @@ export function TaxCreditsTab() {
     const taxCredits = useTaxCredits();
     const { openCreate, openEdit } = useTaxCreditDialog();
     const deleteMutation = useDeleteOrganizationalItem('tax credit', '/api/tax-credits');
+    const dialog = useDialog();
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this tax credit?')) {
+    const handleDelete = async (id: string) => {
+        const confirmed = await dialog.confirm('Are you sure you want to delete this tax credit?', {
+            title: 'Confirm Deletion',
+            confirmText: 'Delete',
+            variant: 'destructive',
+        });
+
+        if (confirmed) {
             deleteMutation.mutate(id);
         }
     };

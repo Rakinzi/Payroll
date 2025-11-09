@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useDialog } from '@/hooks/use-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -81,6 +82,7 @@ export default function CustomTransactionsIndex({
     const { form, setForm, showCreateDialog, setShowCreateDialog } = useCustomTransactionStore();
     const createTransaction = useCreateCustomTransaction();
     const deleteTransaction = useDeleteCustomTransaction();
+    const dialog = useDialog();
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
@@ -105,7 +107,7 @@ export default function CustomTransactionsIndex({
 
     const handleCreate = () => {
         if (!currentPeriodId) {
-            alert('Please select a period');
+            dialog.alert('Please select a period', 'Validation Error');
             return;
         }
 

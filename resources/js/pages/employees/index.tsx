@@ -18,6 +18,7 @@ import {
 } from '@/hooks/queries/use-employees';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
+import { useDialog } from '@/hooks/use-dialog';
 import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Pencil, Plus, Trash2, UserCheck, UserMinus } from 'lucide-react';
@@ -79,20 +80,38 @@ export default function EmployeeListPage({ employees, filters }: Props) {
     const deleteMutation = useDeleteEmployee();
     const restoreMutation = useRestoreEmployee();
     const { open: openTerminateDialog } = useTerminateDialog();
+    const dialog = useDialog();
 
     const handleSearch = (value: string) => {
         setSearch(value);
         router.get('/employees', { search: value }, { preserveState: true, replace: true });
     };
 
-    const handleDelete = (employee: Employee) => {
-        if (confirm(`Are you sure you want to delete ${employee.firstname} ${employee.surname}?`)) {
+    const handleDelete = async (employee: Employee) => {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to delete ${employee.firstname} ${employee.surname}?`,
+            {
+                title: 'Confirm Deletion',
+                confirmText: 'Delete',
+                variant: 'destructive',
+            }
+        );
+
+        if (confirmed) {
             deleteMutation.mutate(employee.id);
         }
     };
 
-    const handleRestore = (employee: Employee) => {
-        if (confirm(`Are you sure you want to restore ${employee.firstname} ${employee.surname}?`)) {
+    const handleRestore = async (employee: Employee) => {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to restore ${employee.firstname} ${employee.surname}?`,
+            {
+                title: 'Confirm Restoration',
+                confirmText: 'Restore',
+            }
+        );
+
+        if (confirmed) {
             restoreMutation.mutate(employee.id);
         }
     };

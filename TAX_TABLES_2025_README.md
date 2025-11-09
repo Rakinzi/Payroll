@@ -1,41 +1,54 @@
-# 2025 Zimbabwe Tax Tables Update Guide
+# 2025 Zimbabwe Tax Tables Guide
 
-This guide explains how to update the payroll system with official 2025 ZIMRA tax rates.
+This guide documents the official 2025 ZIMRA tax rates implemented in the payroll system.
 
 ## Current Status
 
-The system includes a **TaxTables2025Seeder** with placeholder progressive tax rates. These need to be updated with the official 2025 ZIMRA tax tables.
+The system includes a **TaxTables2025Seeder** with **official ZIMRA tax rates for 2025**. The tax tables are ready to be seeded into the database.
 
-## How to Update Tax Tables
+## Official 2025 ZIMRA Tax Rates
 
-### Step 1: Edit the Seeder
+The seeder contains the following official tax brackets:
 
-Open: `database/seeders/TaxTables2025Seeder.php`
+### USD Tax Bands
 
-### Step 2: Update Tax Brackets
+**Monthly (Primary payroll calculation):**
+- $0 - $100: 0% (deduct $0)
+- $100.01 - $300: 20% (deduct $20)
+- $300.01 - $1,000: 25% (deduct $35)
+- $1,000.01 - $2,000: 30% (deduct $85)
+- $2,000.01 - $3,000: 35% (deduct $185)
+- $3,000.01+: 40% (deduct $335)
 
-Replace the placeholder arrays with official 2025 ZIMRA rates:
+**Annual:**
+- $0 - $1,200: 0% (deduct $0)
+- $1,200.01 - $3,600: 20% (deduct $240)
+- $3,600.01 - $12,000: 25% (deduct $420)
+- $12,000.01 - $24,000: 30% (deduct $1,020)
+- $24,000.01 - $36,000: 35% (deduct $2,220)
+- $36,000.01+: 40% (deduct $4,020)
 
-#### Annual USD Tax Bands
-```php
-$annualUsdBands = [
-    ['min' => 0, 'max' => X, 'rate' => Y, 'amount' => Z],
-    // Add all official brackets here
-];
-```
+### ZWG Tax Bands
 
-#### Annual ZWG Tax Bands
-```php
-$annualZwgBands = [
-    ['min' => 0, 'max' => X, 'rate' => Y, 'amount' => Z],
-    // Add all official brackets here
-];
-```
+**Monthly (Primary payroll calculation):**
+- ZWG 0 - 2,800: 0% (deduct ZWG 0)
+- ZWG 2,800.01 - 8,400: 20% (deduct ZWG 560)
+- ZWG 8,400.01 - 28,000: 25% (deduct ZWG 980)
+- ZWG 28,000.01 - 56,000: 30% (deduct ZWG 2,380)
+- ZWG 56,000.01 - 84,000: 35% (deduct ZWG 5,180)
+- ZWG 84,000.01+: 40% (deduct ZWG 9,380)
 
-#### Monthly Bands
-Monthly bands are typically annual rates divided by 12. Update accordingly.
+**Annual:**
+- ZWG 0 - 33,600: 0% (deduct ZWG 0)
+- ZWG 33,600.01 - 100,800: 20% (deduct ZWG 6,720)
+- ZWG 100,800.01 - 336,000: 25% (deduct ZWG 11,760)
+- ZWG 336,000.01 - 672,000: 30% (deduct ZWG 28,560)
+- ZWG 672,000.01 - 1,008,000: 35% (deduct ZWG 62,160)
+- ZWG 1,008,000.01+: 40% (deduct ZWG 112,560)
 
-### Step 3: Run the Seeder
+## How to Apply Tax Tables to Database
+
+### Run the Seeder
 
 ```bash
 php artisan db:seed --class=TaxTables2025Seeder
@@ -55,20 +68,38 @@ Each tax band has 4 components:
 3. **tax_rate**: Rate as decimal (e.g., 0.25 for 25%)
 4. **tax_amount**: Fixed deduction amount for this bracket
 
-## Example Tax Calculation
+## Example Tax Calculations
 
-For an income of $100,000 with brackets:
-- $0 - $60,000: 0% (tax: $0)
-- $60,000 - $120,000: 20% (tax: $8,000 on $40,000)
+### Example 1: Monthly USD Salary of $1,800
+Using the monthly USD tax bands:
+- Bracket: $1,000.01 - $2,000 → 30% rate, deduct $85
+- Tax = ($1,800 × 30%) - $85
+- Tax = $540 - $85
+- **Tax = $455.00**
 
-Total tax: $8,000
+### Example 2: Monthly ZWG Salary of ZWG 18,000
+Using the monthly ZWG tax bands:
+- Bracket: ZWG 8,400.01 - 28,000 → 25% rate, deduct ZWG 980
+- Tax = (ZWG 18,000 × 25%) - ZWG 980
+- Tax = ZWG 4,500 - ZWG 980
+- **Tax = ZWG 3,520.00**
+
+### Example 3: Annual USD Salary of $32,000
+Using the annual USD tax bands:
+- Bracket: $24,000.01 - $36,000 → 35% rate, deduct $2,220
+- Tax = ($32,000 × 35%) - $2,220
+- Tax = $11,200 - $2,220
+- **Tax = $8,980.00**
+
+**Note:** AIDS Levy (3% of calculated tax) is applied separately.
 
 ## Important Notes
 
 1. **Backup First**: Always backup the database before running seeders in production
-2. **Test Thoroughly**: Test calculations with sample salaries after updating
-3. **Document Changes**: Keep a record of when rates were updated
-4. **Verify Compliance**: Ensure rates match official ZIMRA publications
+2. **Test Thoroughly**: Test calculations with sample salaries after seeding
+3. **AIDS Levy**: Remember that a 3% AIDS Levy is applied on top of the calculated PAYE (handled separately in the tax calculator)
+4. **Official Rates**: These rates are from the official ZIMRA PAYE Tax Tables for 1 January to 31 December 2025
+5. **Progressive Taxation**: The deduction amounts ensure proper progressive tax calculation across brackets
 
 ## Tax Credits
 

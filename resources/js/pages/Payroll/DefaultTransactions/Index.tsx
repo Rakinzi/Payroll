@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useDialog } from '@/hooks/use-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -70,6 +71,7 @@ export default function DefaultTransactionsIndex({
     const saveTransactions = useSaveDefaultTransactions();
     const deleteTransaction = useDeleteDefaultTransaction();
     const clearAll = useClearAllDefaultTransactions();
+    const dialog = useDialog();
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
@@ -81,13 +83,13 @@ export default function DefaultTransactionsIndex({
         }
 
         if (!validateRows()) {
-            alert('Please fill in all required fields correctly');
+            dialog.alert('Please fill in all required fields correctly', 'Validation Error');
             return;
         }
 
         const validRows = getValidRows();
         if (validRows.length === 0) {
-            alert('Please add at least one transaction');
+            dialog.alert('Please add at least one transaction', 'Validation Error');
             return;
         }
 

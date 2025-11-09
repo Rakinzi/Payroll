@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { DialogProvider } from './components/dialog-provider';
 import { NotificationProvider } from './components/notification-provider';
 import { initializeTheme } from './hooks/use-appearance';
 import { queryClient } from './lib/query-client';
@@ -26,6 +27,7 @@ createInertiaApp({
             <StrictMode>
                 <QueryClientProvider client={queryClient}>
                     <App {...props} />
+                    <DialogProvider />
                     <NotificationProvider />
                     <ReactQueryDevtools initialIsOpen={false} />
                 </QueryClientProvider>

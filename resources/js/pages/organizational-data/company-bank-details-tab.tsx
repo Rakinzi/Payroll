@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useDialog } from '@/hooks/use-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -60,9 +61,16 @@ export function CompanyBankDetailsTab() {
     const bankDetails = useCompanyBankDetails();
     const { openCreate, openEdit } = useCompanyBankDetailDialog();
     const deleteMutation = useDeleteOrganizationalItem('company bank detail', '/api/company-bank-details');
+    const dialog = useDialog();
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this bank detail?')) {
+    const handleDelete = async (id: string) => {
+        const confirmed = await dialog.confirm('Are you sure you want to delete this bank detail?', {
+            title: 'Confirm Deletion',
+            confirmText: 'Delete',
+            variant: 'destructive',
+        });
+
+        if (confirmed) {
             deleteMutation.mutate(id);
         }
     };

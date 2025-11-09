@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { useDialog } from '@/hooks/use-dialog';
 import AppLayout from '@/components/layouts/app-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ interface ImportPreviewPageProps {
 export default function ImportPreviewIndex() {
     const { session, previewData, errorsByRow } = usePage<ImportPreviewPageProps>().props;
     const processMutation = useProcessImport(session.id);
+    const dialog = useDialog();
 
     // Poll status if processing
     const { data: statusData } = useImportStatus(
@@ -46,11 +48,20 @@ export default function ImportPreviewIndex() {
 
     const handleProcess = async () => {
         if (!session.can_be_processed) {
-            alert('Session cannot be processed due to errors or invalid status');
+            dialog.alert('Session cannot be processed due to errors or invalid status', 'Cannot Process');
             return;
         }
 
-        if (!confirm('Are you sure you want to process all valid rows? This action cannot be undone.')) {
+        const confirmed = await dialog.confirm(
+            'Are you sure you want to process all valid rows? This action cannot be undone.',
+            {
+                title: 'Confirm Processing',
+                confirmText: 'Process',
+                variant: 'destructive',
+            }
+        );
+
+        if (!confirmed) {
             return;
         }
 

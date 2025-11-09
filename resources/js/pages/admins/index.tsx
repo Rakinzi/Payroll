@@ -46,6 +46,7 @@ import {
 } from '@/hooks/queries/use-admins';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
+import { useDialog } from '@/hooks/use-dialog';
 import { type BreadcrumbItem, type PaginatedData, type PaginationLink } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { KeyRound, MoreHorizontal, Pencil, Plus, Shield, Trash2, UserCog } from 'lucide-react';
@@ -103,6 +104,7 @@ export default function AdminsPage({ admins, costCenters, filters, currentUserId
     const deleteMutation = useDeleteAdmin();
     const { open: openAdminDialog } = useAdminDialog();
     const { open: openPasswordDialog } = usePasswordDialog();
+    const dialog = useDialog();
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -128,13 +130,23 @@ export default function AdminsPage({ admins, costCenters, filters, currentUserId
         );
     };
 
-    const handleDelete = (admin: Admin) => {
+    const handleDelete = async (admin: Admin) => {
         if (admin.id === currentUserId) {
-            alert('You cannot delete your own admin account.');
+            dialog.alert('You cannot delete your own admin account.', 'Cannot Delete');
             return;
         }
 
-        if (confirm(`Are you sure you want to delete admin account for ${admin.name}?`)) {
+        const confirmed = await dialog.confirm(
+            `Are you sure you want to delete admin account for ${admin.name}?`,
+            {
+                title: 'Confirm Deletion',
+                confirmText: 'Delete',
+                cancelText: 'Cancel',
+                variant: 'destructive',
+            }
+        );
+
+        if (confirmed) {
             deleteMutation.mutate(admin.id);
         }
     };
@@ -333,6 +345,7 @@ function AdminDialog({ costCenters }: { costCenters: CostCenter[] }) {
     const { isOpen, mode, admin, close } = useAdminDialog();
     const createMutation = useCreateAdmin();
     const updateMutation = useUpdateAdmin(admin?.id || '');
+    const dialog = useDialog();
 
     const [formData, setFormData] = useState<
         CreateAdminData | (UpdateAdminData & { password?: string; password_confirmation?: string })
@@ -373,11 +386,11 @@ function AdminDialog({ costCenters }: { costCenters: CostCenter[] }) {
         if (mode === 'create') {
             const createData = formData as CreateAdminData;
             if (createData.password !== createData.password_confirmation) {
-                alert('Passwords do not match');
+                dialog.alert('Passwords do not match', 'Validation Error');
                 return;
             }
             if (createData.password.length < 8) {
-                alert('Password must be at least 8 characters');
+                dialog.alert('Password must be at least 8 characters', 'Validation Error');
                 return;
             }
             createMutation.mutate(createData, {
@@ -550,6 +563,7 @@ function AdminDialog({ costCenters }: { costCenters: CostCenter[] }) {
 function PasswordResetDialog() {
     const { isOpen, admin, close } = usePasswordDialog();
     const resetMutation = useResetAdminPassword(admin?.id || '');
+    const dialog = useDialog();
 
     const [passwords, setPasswords] = useState<ResetPasswordData>({
         password: '',
@@ -569,12 +583,12 @@ function PasswordResetDialog() {
         e.preventDefault();
 
         if (passwords.password !== passwords.password_confirmation) {
-            alert('Passwords do not match');
+            dialog.alert('Passwords do not match', 'Validation Error');
             return;
         }
 
         if (passwords.password.length < 8) {
-            alert('Password must be at least 8 characters');
+            dialog.alert('Password must be at least 8 characters', 'Validation Error');
             return;
         }
 
