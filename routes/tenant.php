@@ -611,6 +611,9 @@ Route::middleware([
                 // Employee Requisition
                 Route::post('/employee-requisition/generate', [ReportsController::class, 'generateEmployeeRequisition'])->name('employee-requisition.generate');
                 Route::get('/employee-requisition/{requisition}/download', [ReportsController::class, 'downloadEmployeeRequisition'])->name('employee-requisition.download');
+
+                // Payroll Summary
+                Route::post('/payroll-summary/generate', [ReportsController::class, 'generatePayrollSummary'])->name('payroll-summary.generate');
             });
         });
 
