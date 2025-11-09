@@ -170,7 +170,7 @@ export default function Login({
                 </div>
                 <div className="bg-muted relative hidden lg:block">
                     <img
-                        src="/images/login-cover.jpg"
+                        src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2670&auto=format&fit=crop"
                         alt="Lorimak Payroll System"
                         className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                     />
