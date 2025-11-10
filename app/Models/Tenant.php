@@ -2,19 +2,15 @@
 
 namespace App\Models;
 
-use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
-use Stancl\Tenancy\Contracts\TenantWithDatabase;
-use Stancl\Tenancy\Database\Concerns\HasDatabase;
-use Stancl\Tenancy\Database\Concerns\HasDomains;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Multitenancy\Models\Tenant as BaseTenant;
 
-class Tenant extends BaseTenant implements TenantWithDatabase
+class Tenant extends BaseTenant
 {
-    use HasDatabase, HasDomains;
+    protected $guarded = [];
 
     /**
      * The attributes that should be cast.
-     *
-     * @var array
      */
     protected $casts = [
         'data' => 'array',
@@ -37,10 +33,23 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Get the database name for this tenant.
+     */
+    public function getDatabaseName(): string
+    {
+        return $this->database;
+    }
+
+    /**
+     * Get domains for this tenant.
+     */
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class);
+    }
+
+    /**
      * Set tenant's system name.
-     *
-     * @param string $name
-     * @return $this
      */
     public function withSystemName(string $name): self
     {
@@ -52,15 +61,21 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     /**
      * Set tenant's logo.
-     *
-     * @param string $logo
-     * @return $this
      */
     public function withLogo(string $logo): self
     {
         $data = $this->data ?? [];
         $data['logo'] = $logo;
         $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Set database name for the tenant.
+     */
+    public function withDatabase(string $database): self
+    {
+        $this->database = $database;
         return $this;
     }
 }
