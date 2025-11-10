@@ -26,3 +26,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# SQLite databases
+*.sqlite
+*.sqlite-journal
+/test
+/database/*.sqlite
+/database/*.sqlite-journal
