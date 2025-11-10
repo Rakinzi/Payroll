@@ -79,7 +79,7 @@ class TestUserSeeder extends Seeder
 
         $this->command->info("User 2 created: {$user2->email} (Company: {$center2->center_name})");
 
-        $this->newLine();
+        $this->command->newLine();
         $this->command->info("=== Login Credentials ===");
         $this->command->info("Super Admin: admin@lorimak.com / password123 (All Companies)");
         $this->command->info("Test Co User: user@testcompany.com / password123 (Test Company Ltd only)");
