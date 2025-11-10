@@ -83,13 +83,15 @@ mysql -u root -p -e "CREATE DATABASE lorimak_central CHARACTER SET utf8mb4 COLLA
 
 ```bash
 # Run migrations on the central database
-php artisan migrate --database=central
+php artisan migrate --database=central --force
 ```
 
 This creates:
-- `tenants` table
-- `domains` table
+- `tenants` table (with `id`, `database`, `data`, timestamps)
+- `domains` table (with UUID `id`, `tenant_id`, `domain`)
 - Other central app tables
+
+**Note:** The migrations will also create all application tables in the central database. Each tenant will get a separate copy of these tables in their own database.
 
 ### 6. Create Your First Tenant
 
@@ -102,11 +104,14 @@ php artisan tenant:create local local.localhost \
 ```
 
 This command will:
-- ✅ Create tenant record in central DB
-- ✅ Create `local` database
-- ✅ Add domain `local.localhost`
-- ✅ Run tenant migrations
-- ✅ Seed tenant database
+- ✅ Create tenant record in central DB (`tenants` table)
+- ✅ Create `local` MySQL database
+- ✅ Add domain `local.localhost` to `domains` table
+- ✅ Run all migrations on the tenant database
+- ✅ Seed tenant database with:
+  - Permissions and roles (via PermissionSeeder)
+  - Cost centers (via CostCenterSeeder)
+  - Default admin user (`admin@example.com` / `password`)
 
 ### 7. Configure Local Domain
 
@@ -165,24 +170,32 @@ Open your browser:
 # List all tenants
 php artisan tenant:list
 
-# Create new tenant
-php artisan tenant:create {id} {domain} --migrate --seed
+# Create new tenant (recommended method)
+php artisan tenant:create {id} {domain} --name="Tenant Name" --migrate --seed
+# Example:
+php artisan tenant:create acme acme.localhost --name="Acme Corp" --migrate --seed
 
 # Run migrations for a tenant
-php artisan tenant:migrate {tenant}
-php artisan tenant:migrate        # All tenants
-php artisan tenant:migrate --fresh  # Fresh migrations
+php artisan tenant:migrate {tenant_id}
+# Example:
+php artisan tenant:migrate local
 
 # Seed tenant database
-php artisan tenant:seed {tenant}
-php artisan tenant:seed --class=UsersSeeder
+php artisan tenant:seed {tenant_id}
+php artisan tenant:seed {tenant_id} --class=PermissionSeeder
+# Example:
+php artisan tenant:seed local
 
 # Run artisan command in tenant context
-php artisan tenant:run {tenant} {command}
+php artisan tenant:run {tenant_id} {command}
+# Examples:
 php artisan tenant:run local cache:clear
+php artisan tenant:run local db:seed --class=CustomSeeder
 
-# Delete tenant
-php artisan tenant:delete {tenant} --force
+# Delete tenant (removes record, domain, and optionally database)
+php artisan tenant:delete {tenant_id} --force
+# Example:
+php artisan tenant:delete local --force
 ```
 
 ### Development Commands
@@ -260,10 +273,50 @@ ls -la resources/js/routes/
 
 ## Multi-Tenancy Architecture
 
-- **Central Database** (`lorimak_central`): Stores tenants and domains
-- **Tenant Databases** (`{tenant_id}`): Each tenant has isolated database
-- **Domain-based identification**: Tenant identified by request domain
-- **Automatic switching**: Database switches based on domain
+### Overview
+The application uses **Spatie Laravel Multitenancy** for complete tenant isolation:
+
+- **Central Database** (`lorimak_central` or your configured name):
+  - Stores `tenants` table (tenant metadata)
+  - Stores `domains` table (domain-to-tenant mappings)
+  - Connection name: `central`
+
+- **Tenant Databases** (one per tenant):
+  - Each tenant has their own isolated MySQL database
+  - Database name matches tenant ID (e.g., `local`, `acme`, `company1`)
+  - Contains all application tables (users, employees, payrolls, etc.)
+  - Connection name: `tenant` (dynamically switched)
+
+- **Domain-based identification**:
+  - Tenant identified by the domain in the HTTP request
+  - Handled by `DomainTenantFinder` service
+  - Example: `local.localhost` → tenant with ID `local`
+
+- **Automatic database switching**:
+  - Middleware detects domain and switches database connection
+  - All queries automatically execute against tenant database
+  - Complete data isolation between tenants
+
+### Database Structure Example
+
+```
+Central DB (lorimak_central):
+├── tenants
+│   ├── id: "local"
+│   ├── database: "local"
+│   └── data: {"system_name": "Lorimak Demo", ...}
+└── domains
+    ├── id: UUID
+    ├── tenant_id: "local"
+    └── domain: "local.localhost"
+
+Tenant DB (local):
+├── users
+├── employees
+├── payrolls
+├── cost_centers
+└── ... (all app tables)
+```
 
 ## Additional Configuration
 
@@ -310,4 +363,15 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2025-01-10
+## Recent Updates
+
+### 2025-11-10: Migration to Spatie Multitenancy
+- Migrated from Stancl Tenancy to Spatie Laravel Multitenancy
+- Updated all tenant commands (`tenant:create`, `tenant:migrate`, `tenant:seed`)
+- Fixed tenant and domain migrations (string IDs, UUID support)
+- Updated DatabaseSeeder to use Spatie's `Tenant::current()` API
+- Added `tenant` database connection in `config/database.php`
+
+---
+
+**Last Updated:** 2025-11-10

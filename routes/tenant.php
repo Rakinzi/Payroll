@@ -49,8 +49,11 @@ Route::middleware([
     NeedsTenant::class,
     EnsureValidTenantSession::class,
 ])->group(function () {
-    // Redirect home to login
+    // Home route - redirect to dashboard if logged in, otherwise to login
     Route::get('/', function () {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
         return redirect()->route('login');
     })->name('home');
 

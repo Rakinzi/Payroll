@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,7 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Check if we're in tenant context
-        if (tenancy()->initialized) {
+        if (Tenant::current()) {
             // Seeding tenant database
             $this->seedTenantDatabase();
         } else {
@@ -55,7 +56,7 @@ class DatabaseSeeder extends Seeder
      */
     private function seedTenantDatabase(): void
     {
-        $this->command->info('Seeding tenant database: ' . tenant('id'));
+        $this->command->info('Seeding tenant database: ' . Tenant::current()->id);
 
         // Seed permissions and roles for this tenant
         $this->call(PermissionSeeder::class);

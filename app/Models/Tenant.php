@@ -10,6 +10,16 @@ class Tenant extends BaseTenant
     protected $guarded = [];
 
     /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
+     * The "type" of the auto-incrementing ID.
+     */
+    protected $keyType = 'string';
+
+    /**
      * The attributes that should be cast.
      */
     protected $casts = [

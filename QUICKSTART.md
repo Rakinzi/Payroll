@@ -2,9 +2,9 @@
 
 Follow these steps to get the Lorimak Payroll system running quickly.
 
-## 🚀 Quick Setup (Current Environment)
+## 🚀 Quick Setup
 
-Since your `.env` is already configured with SQLite, here's the fastest way to run:
+Get the Lorimak Payroll system running in minutes:
 
 ### 1. Install Dependencies (if not done)
 
@@ -13,11 +13,22 @@ composer install
 npm install
 ```
 
-### 2. Create Central Database Tables
+### 2. Create Central Database
 
 ```bash
+# Create the central database (if using MySQL)
+mysql -u root -p -e "CREATE DATABASE payroll CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
 # Run migrations on central database
 php artisan migrate --database=central --force
+```
+
+**Note:** Update your `.env` file with the correct database credentials:
+```env
+DB_CONNECTION=central
+DB_DATABASE=payroll
+DB_USERNAME=root
+DB_PASSWORD=your_password
 ```
 
 ### 3. Create a Test Tenant
@@ -82,23 +93,26 @@ If you have Docker installed:
 
 ## ⚡ One-Command Setup
 
-Run everything at once:
+After creating the central database, run everything at once:
 
 ```bash
 composer install && \
 npm install && \
 php artisan migrate --database=central --force && \
-php artisan tenant:create local local.localhost --name="Demo" --migrate --seed && \
+php artisan tenant:create local local.localhost --name="Lorimak Demo" --migrate --seed && \
 echo "✅ Setup complete! Add '127.0.0.1 local.localhost' to /etc/hosts"
 ```
 
-Then just start the servers:
+Then update `/etc/hosts` and start the servers:
 
 ```bash
-# Terminal 1
-php artisan serve
+# Add to /etc/hosts
+echo "127.0.0.1 local.localhost" | sudo tee -a /etc/hosts
 
-# Terminal 2
+# Terminal 1 - Laravel
+php artisan serve --host=0.0.0.0
+
+# Terminal 2 - Vite (in a new terminal)
 npm run dev
 ```
 
@@ -106,10 +120,16 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
-### "SQLSTATE[HY000]: General error: 1 no such table"
+### "Table doesn't exist" or "SQLSTATE errors"
 ```bash
-# Run migrations again
-php artisan migrate --database=central --force
+# Drop and recreate central database
+mysql -u root -p -e "DROP DATABASE IF EXISTS payroll; CREATE DATABASE payroll CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Re-run migrations
+php artisan migrate:fresh --database=central --force
+
+# Recreate tenant
+php artisan tenant:create local local.localhost --name="Lorimak Demo" --migrate --seed
 ```
 
 ### "No tenant found"
@@ -127,10 +147,18 @@ php artisan tenant:create local local.localhost --migrate --seed
 npm run dev
 ```
 
-### "Connection refused"
+### "Connection refused" or "Access denied"
 ```bash
-# Check database is running (for MySQL/PostgreSQL)
-# Or use SQLite (already configured in your .env)
+# Check MySQL is running
+sudo systemctl status mysql  # Linux
+brew services list           # Mac with Homebrew
+
+# Verify database credentials in .env
+DB_USERNAME=root
+DB_PASSWORD=your_password
+
+# Test connection
+mysql -u root -p -e "SHOW DATABASES;"
 ```
 
 ---

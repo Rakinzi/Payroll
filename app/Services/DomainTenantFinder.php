@@ -3,20 +3,23 @@
 namespace App\Services;
 
 use App\Models\Domain;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
-use Spatie\Multitenancy\Models\Concerns\UsesTenantModel;
+use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\TenantFinder\TenantFinder;
 
 class DomainTenantFinder extends TenantFinder
 {
-    use UsesTenantModel;
-
-    public function findForRequest(Request $request): ?int
+    public function findForRequest(Request $request): ?IsTenant
     {
         $host = $request->getHost();
 
         $domain = Domain::where('domain', $host)->first();
 
-        return $domain?->tenant_id;
+        if (! $domain) {
+            return null;
+        }
+
+        return Tenant::find($domain->tenant_id);
     }
 }

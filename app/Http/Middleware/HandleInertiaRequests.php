@@ -72,11 +72,11 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTenantInfo(): ?array
     {
-        if (! \Spatie\Multitenancy\Multitenancy::hasCurrentTenant()) {
+        $tenant = \App\Models\Tenant::current();
+
+        if (! $tenant) {
             return null;
         }
-
-        $tenant = \Spatie\Multitenancy\Multitenancy::getCurrentTenant();
 
         return [
             'id' => $tenant->id,

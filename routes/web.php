@@ -16,20 +16,20 @@ use Illuminate\Support\Facades\Route;
 // Central app routes (if any) go here
 // For example: tenant management, billing, etc.
 
-// Only show this message on actual central domains (not tenant domains)
+// Central landing page - only accessible when no tenant is found
+// This route has a lower priority than tenant routes
 Route::get('/', function () {
-    // Check if we're on a central domain
-    $centralDomains = config('tenancy.central_domains');
-    $currentDomain = request()->getHost();
-
-    if (in_array($currentDomain, $centralDomains)) {
-        return response()->json([
-            'message' => 'Lorimak Payroll System',
-            'version' => '2.0',
-            'note' => 'Please access via your tenant domain (e.g., nhaka.lorimakpayport.com, local.localhost)',
-        ]);
-    }
-
-    // If not a central domain, let it fall through to tenant routes
-    abort(404);
-});
+    return response()->json([
+        'message' => 'Lorimak Payroll System',
+        'version' => '2.0',
+        'note' => 'Please access via your tenant domain.',
+        'example' => 'http://local.localhost:8000',
+        'tenants' => \App\Models\Tenant::with('domains')->get()->map(function ($tenant) {
+            return [
+                'id' => $tenant->id,
+                'name' => $tenant->system_name,
+                'domains' => $tenant->domains->pluck('domain'),
+            ];
+        }),
+    ]);
+})->withoutMiddleware([\Spatie\Multitenancy\Http\Middleware\NeedsTenant::class]);

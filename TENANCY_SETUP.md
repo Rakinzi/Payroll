@@ -1,6 +1,6 @@
 # Multi-Tenancy Setup Guide
 
-This document explains the multi-tenancy implementation using stancl/tenancy package.
+This document explains the multi-tenancy implementation using **Spatie Laravel Multitenancy** package.
 
 ## Architecture
 
@@ -63,60 +63,88 @@ php artisan db:seed --class=TenantSeeder
 
 ```bash
 # Migrate all tenant databases
-php artisan tenants:migrate
+php artisan tenant:migrate
+# Or for specific tenant
+php artisan tenant:migrate local
 ```
 
 ### 6. Seed Tenant Data
 
 ```bash
-# Seed permissions in each tenant database
-php artisan tenants:run db:seed --class=PermissionSeeder
+# Seed specific tenant database
+php artisan tenant:seed local
+
+# Or seed with specific seeder
+php artisan tenant:seed local --class=PermissionSeeder
 ```
 
 ## Adding New Tenants
 
-To add a new tenant:
+To add a new tenant, use the convenient Artisan command:
 
-1. **Create the tenant database** (if it doesn't exist):
+### Quick Method (Recommended)
+
 ```bash
-mysql -u root -p -e "CREATE DATABASE lorimakp_newclient"
+# Create tenant with database, domain, migrations, and seeds in one command
+php artisan tenant:create newclient newclient.lorimakpayport.com \
+    --name="New Client Name" \
+    --migrate \
+    --seed
 ```
 
-2. **Create tenant record** in tinker or via seeder:
+This command automatically:
+- ✅ Creates the tenant record in central database
+- ✅ Creates the MySQL database (`newclient`)
+- ✅ Registers the domain (`newclient.lorimakpayport.com`)
+- ✅ Runs all tenant migrations
+- ✅ Seeds the tenant database with permissions and default data
+
+### Manual Method
+
+If you need more control:
+
+1. **Create tenant record**:
 ```php
 use App\Models\Tenant;
+use App\Models\Domain;
 
 $tenant = Tenant::create([
     'id' => 'newclient',
-    'tenancy_db_name' => 'lorimakp_newclient',
+    'database' => 'newclient',
+    'data' => [
+        'system_name' => 'New Client Name',
+        'logo' => 'path/to/logo.png',
+    ],
 ]);
 
-$tenant->withSystemName('New Client Name')
-    ->withLogo('path/to/logo.png')
-    ->save();
-
-$tenant->domains()->create([
+Domain::create([
+    'tenant_id' => $tenant->id,
     'domain' => 'newclient.lorimakpayport.com',
 ]);
 ```
 
-3. **Run migrations** for the new tenant:
+2. **Create the database**:
 ```bash
-php artisan tenants:migrate --tenants=newclient
+mysql -u root -p -e "CREATE DATABASE newclient CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 ```
 
-4. **Seed permissions**:
+3. **Run migrations**:
 ```bash
-php artisan tenants:run db:seed --class=PermissionSeeder --tenants=newclient
+php artisan tenant:migrate newclient
+```
+
+4. **Seed database**:
+```bash
+php artisan tenant:seed newclient
 ```
 
 ## How It Works
 
 ### Domain Resolution
 1. User accesses `nhaka.lorimakpayport.com`
-2. `InitializeTenancyByDomain` middleware identifies the tenant
-3. Database connection switches to `lorimakp_nhaka`
-4. All queries execute against the tenant database
+2. `DomainTenantFinder` service identifies the tenant from the domain
+3. Spatie multitenancy automatically switches database connection to the tenant's database
+4. All queries execute against the tenant database (`nhaka`)
 
 ### Tenant Isolation
 - Each request is scoped to ONE tenant database
@@ -124,7 +152,7 @@ php artisan tenants:run db:seed --class=PermissionSeeder --tenants=newclient
 - Cost centers provide sub-tenancy within each database
 
 ### Frontend Access
-React components can access tenant info via:
+React components can access tenant info via Inertia shared props:
 ```jsx
 import { usePage } from '@inertiajs/react';
 
@@ -133,12 +161,14 @@ function MyComponent() {
 
     return (
         <div>
-            <h1>{tenant.name}</h1>
+            <h1>{tenant.system_name}</h1>
             {tenant.logo && <img src={tenant.logo} alt="Logo" />}
         </div>
     );
 }
 ```
+
+The tenant data is automatically shared via `HandleInertiaRequests` middleware.
 
 ## Routes
 

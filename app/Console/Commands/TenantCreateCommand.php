@@ -45,7 +45,6 @@ class TenantCreateCommand extends Command
         // Create the tenant
         $tenant = Tenant::create([
             'id' => $tenantId,
-            'name' => $name,
             'database' => $database,
             'data' => [
                 'system_name' => $name,
@@ -84,7 +83,7 @@ class TenantCreateCommand extends Command
             ['Property', 'Value'],
             [
                 ['ID', $tenant->id],
-                ['Name', $tenant->name],
+                ['Name', $tenant->system_name],
                 ['Domain', $domain],
                 ['Database', $database],
             ]
