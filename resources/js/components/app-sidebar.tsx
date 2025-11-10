@@ -27,13 +27,10 @@ import taxCredits from '@/routes/tax-credits';
 import currencySetup from '@/routes/currency-setup';
 import vehicleBenefits from '@/routes/vehicle-benefits';
 import companyBankDetails from '@/routes/company-bank-details';
-import leaveCalculation from '@/routes/leave-calculation';
 import admins from '@/routes/admins';
 import activityLogs from '@/routes/activity-logs';
 import securityLogs from '@/routes/security-logs';
-import settings from '@/routes/settings';
 import appearance from '@/routes/appearance';
-import storage from '@/routes/storage';
 import profile from '@/routes/profile';
 import { organizationalData } from '@/routes';
 import spreadsheetImport from '@/routes/spreadsheet-import';
@@ -45,24 +42,12 @@ import {
     Folder,
     LayoutGrid,
     Users,
-    UserX,
     Wallet,
-    FileText,
     Calendar,
     BarChart3,
     Building2,
     Settings as SettingsIcon,
-    DollarSign,
-    TrendingUp,
-    Car,
-    CreditCard,
-    Calculator,
     ShieldCheck,
-    Activity,
-    Lock,
-    Palette,
-    HardDrive,
-    User,
     Database,
     Upload,
     Bell,
@@ -138,66 +123,16 @@ const mainNavItems: NavItem[] = [
                 title: 'Reports',
                 href: leave.reports.index(),
             },
-            {
-                title: 'Leave Calculation',
-                href: leaveCalculation.index(),
-            },
         ],
     },
     {
         title: 'Reports',
         href: reports.index(),
         icon: BarChart3,
-        items: [
-            {
-                title: 'All Reports',
-                href: reports.index(),
-            },
-            {
-                title: 'Cost Analysis',
-                href: reports.costAnalysis.index(),
-            },
-            {
-                title: 'ITF Forms',
-                href: reports.itfForms.index(),
-            },
-            {
-                title: 'Variance Analysis',
-                href: reports.varianceAnalysis.index(),
-            },
-            {
-                title: 'Third Party Payments',
-                href: reports.thirdParty.index(),
-            },
-            {
-                title: 'Scheduled Reports',
-                href: reports.scheduled.index(),
-            },
-            {
-                title: 'Taxable Accumulatives',
-                href: reports.taxableAccumulatives.index(),
-            },
-            {
-                title: 'Tax Cell Accumulatives',
-                href: reports.taxCellAccumulatives.index(),
-            },
-            {
-                title: 'Retirement Warning',
-                href: reports.retirementWarning.index(),
-            },
-            {
-                title: 'Employee Requisition',
-                href: reports.employeeRequisition.index(),
-            },
-            {
-                title: 'Payroll Summary',
-                href: reports.payrollSummary.index(),
-            },
-        ],
     },
     {
         title: 'Companies',
-        href: companies.index(),
+        href: companies.show(),
         icon: Building2,
     },
     {
@@ -263,20 +198,16 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Settings',
-        href: settings.profile.index(),
+        href: profile.edit(),
         icon: SettingsIcon,
         items: [
             {
                 title: 'Profile',
-                href: settings.profile.index(),
+                href: profile.edit(),
             },
             {
                 title: 'Appearance',
-                href: appearance.index(),
-            },
-            {
-                title: 'Storage',
-                href: storage.index(),
+                href: appearance.edit(),
             },
         ],
     },
