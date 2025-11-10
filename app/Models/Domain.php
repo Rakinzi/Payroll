@@ -10,6 +10,8 @@ class Domain extends Model
 {
     use HasUuids;
 
+    protected $connection = 'central';
+
     protected $guarded = [];
 
     /**
