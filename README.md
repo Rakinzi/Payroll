@@ -51,30 +51,39 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 4. Create central database
-mysql -u root -p -e "CREATE DATABASE payroll CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# 4. Ensure MySQL is running
+sudo systemctl start mysql
 
-# 5. Configure .env
-# Update DB_DATABASE=payroll and other credentials
+# 5. Create central database
+sudo mysql -u root -e "CREATE DATABASE IF NOT EXISTS lorimak_central CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 6. Run migrations
-php artisan migrate --database=central --force
+# 6. Configure database in .env (already set for MySQL)
+# DB_CONNECTION=mysql
+# DB_DATABASE=lorimak_central
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-# 7. Create your first tenant
-php artisan tenant:create local local.localhost --name="Lorimak Demo" --migrate --seed
+# 7. Run central database migrations
+php artisan migrate --database=central
 
-# 8. Add to /etc/hosts
-echo "127.0.0.1 local.localhost" | sudo tee -a /etc/hosts
+# 8. Create your first tenant
+php artisan tenant:create test localhost --migrate --name="Test Company"
 
-# 9. Start servers
-php artisan serve --host=0.0.0.0  # Terminal 1
-npm run dev                        # Terminal 2
+# 9. Seed test users and companies
+php artisan tenant:seed test --class=TestUserSeeder
 
-# 10. Access at http://local.localhost:8000
-# Login: admin@example.com / password
+# 10. Start the development environment (runs Laravel server, queue, logs, and Vite)
+composer run dev
+
+# 11. Access at http://localhost:8000/login
 ```
 
-For detailed setup instructions, see [SETUP.md](./SETUP.md) or [QUICKSTART.md](./QUICKSTART.md).
+**Login Credentials:**
+- **Super Admin:** admin@lorimak.com / password123 (Access to all companies)
+- **Test Co User:** user@testcompany.com / password123 (Test Company Ltd only)
+- **Demo Corp User:** user@democorp.com / password123 (Demo Corporation only)
+
+For detailed setup instructions, see the **Setup Guide** section below.
 
 ## Documentation
 
@@ -89,23 +98,29 @@ For detailed setup instructions, see [SETUP.md](./SETUP.md) or [QUICKSTART.md](.
 The application uses **Spatie Laravel Multitenancy** for complete tenant isolation:
 
 ```
-Central Database (payroll)
+Central Database (lorimak_central)
 ├── tenants (tenant metadata)
 └── domains (domain-to-tenant mapping)
 
-Tenant Databases (one per tenant)
+Tenant Databases (MySQL - one per tenant)
 ├── users
 ├── employees
 ├── payrolls
-├── cost_centers
+├── cost_centers (represents companies/organizations)
 └── ... (all app tables)
 ```
 
 Each tenant:
-- Has their own isolated database
-- Is identified by domain (e.g., `company1.localhost`)
+- Has their own isolated MySQL database
+- Is identified by domain (e.g., `localhost`, `company.example.com`)
 - Has custom branding (system name, logo)
 - Has independent users and data
+
+**Important:** Cost centers represent **companies/organizations**, not departments. Each cost center is a separate company entity within a tenant's database.
+
+### User Access Levels:
+- **Super Admin** (`center_id = null`): Can access all cost centers/companies
+- **Company User** (`center_id = <uuid>`): Restricted to specific cost center/company
 
 ## Key Commands
 
@@ -113,7 +128,7 @@ Each tenant:
 
 ```bash
 # Create new tenant
-php artisan tenant:create <id> <domain> --name="Company Name" --migrate --seed
+php artisan tenant:create <id> <domain> --name="Company Name" --migrate
 
 # List all tenants
 php artisan tenant:list
@@ -121,27 +136,34 @@ php artisan tenant:list
 # Run migrations for tenant
 php artisan tenant:migrate <tenant_id>
 
-# Seed tenant database
-php artisan tenant:seed <tenant_id>
+# Seed tenant database (with specific seeder)
+php artisan tenant:seed <tenant_id> --class=TestUserSeeder
 
 # Run command in tenant context
-php artisan tenant:run <tenant_id> <command>
+php artisan tenant:run <tenant_id> <command> --option=key=value
 
 # Delete tenant
-php artisan tenant:delete <tenant_id> --force
+php artisan tenant:delete <tenant_id>
 ```
 
 ### Development
 
 ```bash
+# Start development environment (recommended)
+# Runs: Laravel server, queue worker, log viewer (pail), and Vite
+composer run dev
+
+# Or run components separately:
+php artisan serve              # Laravel server
+php artisan queue:listen       # Queue worker
+php artisan pail              # Live log viewer
+npm run dev                   # Vite dev server (hot reload)
+
 # Run all tests
 php artisan test
 
 # Clear all caches
 php artisan optimize:clear
-
-# View live logs
-php artisan pail
 
 # Code analysis
 ./vendor/bin/phpstan analyse
@@ -229,17 +251,20 @@ APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 
-# Central Database
-DB_CONNECTION=central
+# Database (MySQL)
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=payroll
+DB_DATABASE=lorimak_central
 DB_USERNAME=root
 DB_PASSWORD=
 
+# Central database name
+CENTRAL_DB_DATABASE=lorimak_central
+
 # Session & Cache
-SESSION_DRIVER=database
-CACHE_DRIVER=file
+SESSION_DRIVER=file
+CACHE_STORE=file
 QUEUE_CONNECTION=sync
 ```
 
