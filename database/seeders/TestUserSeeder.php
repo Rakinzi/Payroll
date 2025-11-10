@@ -21,6 +21,7 @@ class TestUserSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'center_name' => 'Test Company Ltd',
+                'is_active' => true,
             ]
         );
 
@@ -32,6 +33,7 @@ class TestUserSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'center_name' => 'Demo Corporation',
+                'is_active' => true,
             ]
         );
 
