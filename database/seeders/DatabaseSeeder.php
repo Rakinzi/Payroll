@@ -60,6 +60,9 @@ class DatabaseSeeder extends Seeder
         // Seed permissions and roles for this tenant
         $this->call(PermissionSeeder::class);
 
+        // Seed cost centers
+        $this->call(CostCenterSeeder::class);
+
         // Create default test user for each tenant
         User::firstOrCreate(
             ['email' => 'admin@example.com'],

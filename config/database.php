@@ -65,7 +65,7 @@ return [
         ],
 
         // Tenant database template - will be cloned for each tenant connection
-        'tenant' => [
+        'tenant_template' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),

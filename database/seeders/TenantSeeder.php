@@ -52,6 +52,7 @@ class TenantSeeder extends Seeder
             $tenant = Tenant::create([
                 'id' => $tenantData['id'],
                 'tenancy_db_name' => $tenantData['database'],
+                'tenancy_db_driver' => 'mysql',
             ]);
 
             // Set system name and logo

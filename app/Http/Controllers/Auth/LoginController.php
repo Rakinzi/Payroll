@@ -36,8 +36,8 @@ class LoginController extends Controller
             'center_id' => ['nullable', 'uuid', 'exists:cost_centers,id'],
         ]);
 
-        // Determine which center to search in
-        $centerId = $request->center_id;
+        // Determine which center to search in (handle empty string as null)
+        $centerId = $request->center_id ?: null;
 
         // Find user
         $user = User::where('email', $request->email)
