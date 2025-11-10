@@ -31,8 +31,8 @@ use App\Http\Middleware\CheckCostCenter;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+use Spatie\Multitenancy\Http\Middleware\NeedsTenant;
+use Spatie\Multitenancy\Http\Middleware\EnsureValidTenantSession;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,15 +40,14 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 |--------------------------------------------------------------------------
 |
 | Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider and all
-| of them will have the tenancy middleware applied automatically.
+| These routes are loaded with Spatie Multitenancy middleware.
 |
 */
 
 Route::middleware([
     'web',
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
+    NeedsTenant::class,
+    EnsureValidTenantSession::class,
 ])->group(function () {
     // Redirect home to login
     Route::get('/', function () {
