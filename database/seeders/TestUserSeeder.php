@@ -15,23 +15,23 @@ class TestUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create cost center
+        // Create cost center (represents a company/organization)
         $center = CostCenter::firstOrCreate(
-            ['center_code' => 'HQ'],
+            ['center_code' => 'TESTCO'],
             [
                 'id' => Str::uuid(),
-                'center_name' => 'Headquarters',
+                'center_name' => 'Test Company Ltd',
             ]
         );
 
-        $this->command->info("Cost Center: {$center->center_name}");
+        $this->command->info("Cost Center (Company): {$center->center_name}");
 
-        // Create test user
+        // Create test user for this company
         $user = User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'admin@testcompany.com'],
             [
                 'id' => Str::uuid(),
-                'name' => 'Test User',
+                'name' => 'Admin User',
                 'password' => Hash::make('password123'),
                 'center_id' => $center->id,
                 'email_verified_at' => now(),
@@ -40,6 +40,6 @@ class TestUserSeeder extends Seeder
 
         $this->command->info("User created: {$user->email}");
         $this->command->info("Password: password123");
-        $this->command->info("Cost Center: {$center->center_name} ({$center->center_code})");
+        $this->command->info("Company: {$center->center_name} (Code: {$center->center_code})");
     }
 }
