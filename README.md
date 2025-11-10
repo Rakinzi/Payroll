@@ -144,6 +144,31 @@ php artisan tenant:run <tenant_id> <command> --option=key=value
 
 # Delete tenant
 php artisan tenant:delete <tenant_id>
+
+# Fresh migrate tenant (drop all tables and re-migrate)
+php artisan tenant:migrate <tenant_id> --fresh
+
+# Reseed tenant (fresh migrate + seed)
+php artisan tenant:migrate <tenant_id> --fresh && php artisan tenant:seed <tenant_id> --class=TestUserSeeder
+```
+
+### Database Reset/Reseed
+
+```bash
+# Reseed tenant only (keeps central database)
+php artisan tenant:migrate test --fresh && php artisan tenant:seed test --class=TestUserSeeder
+
+# Reseed everything (central + tenant)
+php artisan migrate:fresh --database=central && \
+php artisan tenant:create test localhost --migrate --name="Test Company" && \
+php artisan tenant:seed test --class=TestUserSeeder
+
+# Complete fresh setup from MySQL (nuclear option)
+sudo mysql -u root -e "DROP DATABASE IF EXISTS lorimak_central;" && \
+sudo mysql -u root -e "CREATE DATABASE lorimak_central CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" && \
+php artisan migrate --database=central && \
+php artisan tenant:create test localhost --migrate --name="Test Company" && \
+php artisan tenant:seed test --class=TestUserSeeder
 ```
 
 ### Development

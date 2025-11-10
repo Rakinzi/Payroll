@@ -363,6 +363,20 @@ php artisan tenant:create test localhost --migrate --name="Test Company"
 php artisan tenant:seed test --class=TestUserSeeder
 ```
 
+### Issue: Need to reset database with fresh data
+
+**Solution:** Reseed the tenant database (removes all data and reseeds):
+```bash
+php artisan tenant:migrate test --fresh && php artisan tenant:seed test --class=TestUserSeeder
+```
+
+**To reset everything (central + tenant):**
+```bash
+php artisan migrate:fresh --database=central && \
+php artisan tenant:create test localhost --migrate --name="Test Company" && \
+php artisan tenant:seed test --class=TestUserSeeder
+```
+
 ### Issue: Cannot access http://localhost:8000
 
 **Solution:** Ensure Laravel server is running:
