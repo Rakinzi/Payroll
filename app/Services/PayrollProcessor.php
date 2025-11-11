@@ -235,35 +235,35 @@ class PayrollProcessor
     {
         // Get employee salary information
         $basicSalaryUsd = $employee->basic_salary_usd ?? 0;
-        $basicSalaryZwl = $employee->basic_salary ?? 0;
+        $basicSalaryZwg = $employee->basic_salary ?? 0;
 
         // Apply currency split if multi-currency
         if ($currency === 'DEFAULT') {
             $usdPercentage = $employee->usd_percentage ?? 50;
-            $zwlPercentage = $employee->zwl_percentage ?? 50;
+            $zwgPercentage = $employee->zwg_percentage ?? 50;
 
             // Calculate split amounts (simplified - actual implementation would use exchange rates)
-            $totalInUsd = $basicSalaryUsd > 0 ? $basicSalaryUsd : $basicSalaryZwl;
+            $totalInUsd = $basicSalaryUsd > 0 ? $basicSalaryUsd : $basicSalaryZwg;
             $basicSalaryUsd = $totalInUsd * ($usdPercentage / 100);
-            $basicSalaryZwl = $totalInUsd * ($zwlPercentage / 100);
+            $basicSalaryZwg = $totalInUsd * ($zwgPercentage / 100);
         } elseif ($currency === 'USD') {
-            $basicSalaryZwl = 0;
-            $basicSalaryUsd = $basicSalaryUsd > 0 ? $basicSalaryUsd : $basicSalaryZwl;
+            $basicSalaryZwg = 0;
+            $basicSalaryUsd = $basicSalaryUsd > 0 ? $basicSalaryUsd : $basicSalaryZwg;
         } elseif ($currency === 'ZWG') {
             $basicSalaryUsd = 0;
-            $basicSalaryZwl = $basicSalaryZwl > 0 ? $basicSalaryZwl : $basicSalaryUsd;
+            $basicSalaryZwg = $basicSalaryZwg > 0 ? $basicSalaryZwg : $basicSalaryUsd;
         }
 
         // Calculate tax
         $taxCalculationUsd = $this->taxCalculator->calculateTax($employee, $basicSalaryUsd, 'USD');
-        $taxCalculationZwl = $this->taxCalculator->calculateTax($employee, $basicSalaryZwl, 'ZWG');
+        $taxCalculationZwg = $this->taxCalculator->calculateTax($employee, $basicSalaryZwg, 'ZWG');
 
         // Create payslip
         $payslip = $this->createPayslip($period, $employee, [
             'basic_salary_usd' => $basicSalaryUsd,
-            'basic_salary_zwl' => $basicSalaryZwl,
+            'basic_salary_zwg' => $basicSalaryZwg,
             'tax_usd' => $taxCalculationUsd['tax_amount'],
-            'tax_zwl' => $taxCalculationZwl['tax_amount'],
+            'tax_zwg' => $taxCalculationZwg['tax_amount'],
             'currency' => $currency,
         ]);
 
@@ -390,11 +390,11 @@ class PayrollProcessor
             $code = $transaction->transactionCode;
 
             // Determine amounts based on currency
-            $amountZwl = 0;
+            $amountZwg = 0;
             $amountUsd = 0;
 
             if ($transaction->transaction_currency === 'ZWG') {
-                $amountZwl = $transaction->employee_amount ?? 0;
+                $amountZwg = $transaction->employee_amount ?? 0;
             } elseif ($transaction->transaction_currency === 'USD') {
                 $amountUsd = $transaction->employee_amount ?? 0;
             } else {
@@ -403,7 +403,7 @@ class PayrollProcessor
                     $amountUsd = $transaction->employee_amount ?? 0;
                 }
                 if ($payslip->gross_salary_zwg > 0) {
-                    $amountZwl = $transaction->employee_amount ?? 0;
+                    $amountZwg = $transaction->employee_amount ?? 0;
                 }
             }
 
@@ -418,7 +418,7 @@ class PayrollProcessor
             $payslip->addTransaction([
                 'description' => $code->code_name,
                 'transaction_type' => $transactionType,
-                'amount_zwg' => $amountZwl,
+                'amount_zwg' => $amountZwg,
                 'amount_usd' => $amountUsd,
                 'is_taxable' => $code->apply_to_tax ?? false,
                 'is_recurring' => true,
@@ -492,13 +492,13 @@ class PayrollProcessor
                     };
 
                     // Add transaction to payslip
-                    $amountZwl = $currency === 'ZWG' ? $amount : 0;
+                    $amountZwg = $currency === 'ZWG' ? $amount : 0;
                     $amountUsd = $currency === 'USD' ? $amount : 0;
 
                     $payslip->addTransaction([
                         'description' => $code->code_name . ' (Custom)',
                         'transaction_type' => $transactionType,
-                        'amount_zwg' => $amountZwl,
+                        'amount_zwg' => $amountZwg,
                         'amount_usd' => $amountUsd,
                         'is_taxable' => $code->apply_to_tax ?? false,
                         'is_recurring' => false,

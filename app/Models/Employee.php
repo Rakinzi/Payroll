@@ -64,7 +64,7 @@ class Employee extends Model
         'dependents',
         'vehicle_engine_capacity',
         // Currency Splitting
-        'zwl_percentage',
+        'zwg_percentage',
         'usd_percentage',
         // NEC Integration
         'nec_grade_id',
@@ -125,7 +125,7 @@ class Employee extends Model
             'basic_salary_usd' => 'decimal:2',
             'leave_entitlement' => 'decimal:2',
             'leave_accrual' => 'decimal:2',
-            'zwl_percentage' => 'decimal:2',
+            'zwg_percentage' => 'decimal:2',
             'usd_percentage' => 'decimal:2',
             'working_hours' => 'decimal:2',
             'dependents' => 'integer',

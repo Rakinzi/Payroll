@@ -64,7 +64,7 @@ return new class extends Migration
             $table->integer('vehicle_engine_capacity')->nullable(); // For vehicle benefit tax
 
             // Currency Splitting
-            $table->decimal('zwl_percentage', 5, 2)->default(0); // Percentage of salary in ZWG
+            $table->decimal('zwg_percentage', 5, 2)->default(0); // Percentage of salary in ZWG
             $table->decimal('usd_percentage', 5, 2)->default(100); // Percentage of salary in USD
 
             // NEC Integration

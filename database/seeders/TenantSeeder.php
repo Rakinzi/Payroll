@@ -17,6 +17,13 @@ class TenantSeeder extends Seeder
         // Array of existing tenants from the current PHP implementation
         $tenants = [
             [
+                'id' => 'test',
+                'database' => 'lorimakp_test',
+                'domain' => 'test.localhost',
+                'system_name' => 'Test Tenant',
+                'logo' => null,
+            ],
+            [
                 'id' => 'local',
                 'database' => 'lorimakp_lorimak_v1',
                 'domain' => 'local.localhost',
@@ -48,14 +55,13 @@ class TenantSeeder extends Seeder
         ];
 
         foreach ($tenants as $tenantData) {
-            // Create tenant
+            // Create tenant with database name
             $tenant = Tenant::create([
                 'id' => $tenantData['id'],
-                'tenancy_db_name' => $tenantData['database'],
-                'tenancy_db_driver' => 'mysql',
+                'database' => $tenantData['database'],
             ]);
 
-            // Set system name and logo
+            // Set system name and logo in data field
             $tenant->withSystemName($tenantData['system_name']);
 
             if ($tenantData['logo']) {

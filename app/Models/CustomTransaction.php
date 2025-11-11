@@ -143,8 +143,13 @@ class CustomTransaction extends Model
     /**
      * Scope to filter by center.
      */
-    public function scopeForCenter($query, string $centerId)
+    public function scopeForCenter($query, ?string $centerId)
     {
+        if ($centerId === null) {
+            // Super admin - return all centers
+            return $query;
+        }
+
         return $query->where('center_id', $centerId);
     }
 

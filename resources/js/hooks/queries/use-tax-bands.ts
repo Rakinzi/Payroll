@@ -21,16 +21,16 @@ export interface TaxBandData {
     tax_amount: number;
 }
 
-export type BandType = 'annual_zwl' | 'annual_usd' | 'monthly_zwl' | 'monthly_usd';
+export type BandType = 'annual_zwg' | 'annual_usd' | 'monthly_zwg' | 'monthly_usd';
 
 export const BAND_TYPE_LABELS: Record<BandType, string> = {
-    annual_zwl: 'ZWG - Annual Table',
+    annual_zwg: 'ZWG - Annual Table',
     annual_usd: 'USD - Annual Table',
-    monthly_zwl: 'ZWG - Monthly Table',
+    monthly_zwg: 'ZWG - Monthly Table',
     monthly_usd: 'USD - Monthly Table',
 };
 
-export const BAND_TYPES: BandType[] = ['annual_zwl', 'annual_usd', 'monthly_zwl', 'monthly_usd'];
+export const BAND_TYPES: BandType[] = ['annual_zwg', 'annual_usd', 'monthly_zwg', 'monthly_usd'];
 
 // Query keys factory
 export const taxBandKeys = {

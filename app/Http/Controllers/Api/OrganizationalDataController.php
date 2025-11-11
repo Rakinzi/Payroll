@@ -24,12 +24,20 @@ class OrganizationalDataController extends Controller
      */
     public function index()
     {
+        // Fetch tax bands from all four tables and combine with metadata
+        $taxBands = collect([
+            ...TaxBand::annualZwg()->orderBy('min_salary')->get()->map(fn($band) => array_merge($band->toArray(), ['currency' => 'ZWG', 'period' => 'annual'])),
+            ...TaxBand::annualUsd()->orderBy('min_salary')->get()->map(fn($band) => array_merge($band->toArray(), ['currency' => 'USD', 'period' => 'annual'])),
+            ...TaxBand::monthlyZwg()->orderBy('min_salary')->get()->map(fn($band) => array_merge($band->toArray(), ['currency' => 'ZWG', 'period' => 'monthly'])),
+            ...TaxBand::monthlyUsd()->orderBy('min_salary')->get()->map(fn($band) => array_merge($band->toArray(), ['currency' => 'USD', 'period' => 'monthly'])),
+        ]);
+
         return response()->json([
             'company' => Company::active()->first(),
             'departments' => Department::active()->orderBy('dept_name')->get(),
             'positions' => Position::active()->orderBy('position_name')->get(),
             'transaction_codes' => TransactionCode::active()->orderBy('code_number')->get(),
-            'tax_bands' => TaxBand::active()->orderBy('currency')->orderBy('period')->orderBy('min_salary')->get(),
+            'tax_bands' => $taxBands,
             'tax_credits' => TaxCredit::active()->orderBy('currency')->orderBy('period')->get(),
             'nec_grades' => NECGrade::with('transactionCode')->active()->orderBy('grade_name')->get(),
             'vehicle_benefit_bands' => VehicleBenefitBand::active()->orderBy('engine_capacity_min')->get(),

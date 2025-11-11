@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('period_start');
             $table->date('period_end');
             $table->timestamps();
+            $table->softDeletes();
 
             // Foreign keys
             $table->foreign('payroll_id')

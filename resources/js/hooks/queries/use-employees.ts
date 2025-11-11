@@ -55,7 +55,7 @@ export interface Employee {
     dependents?: number;
     vehicle_engine_capacity?: number;
     // Currency
-    zwl_percentage?: number;
+    zwg_percentage?: number;
     usd_percentage?: number;
     // NEC
     nec_grade_id?: string;

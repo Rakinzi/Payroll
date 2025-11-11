@@ -12,23 +12,14 @@ use Inertia\Inertia;
 class AdminController extends Controller
 {
     /**
-     * Ensure only super admins can access admin management.
-     */
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->isSuperAdmin()) {
-                abort(403, 'Access denied. Super admin privileges required.');
-            }
-            return $next($request);
-        });
-    }
-
-    /**
      * Display a listing of admin users.
      */
     public function index(Request $request)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
         $query = User::admins()
             ->with(['employee', 'costCenter'])
             ->withCount('roles');
@@ -79,6 +70,11 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -109,6 +105,11 @@ class AdminController extends Controller
      */
     public function show(User $admin)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
+
         // Ensure target user is an admin
         if (!$admin->isAdmin()) {
             abort(404, 'User is not an admin');
@@ -129,6 +130,11 @@ class AdminController extends Controller
      */
     public function update(Request $request, User $admin)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
+
         // Ensure target user is an admin
         if (!$admin->isAdmin()) {
             abort(404, 'User is not an admin');
@@ -155,6 +161,11 @@ class AdminController extends Controller
      */
     public function destroy(User $admin)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
+
         // Ensure target user is an admin
         if (!$admin->isAdmin()) {
             abort(404, 'User is not an admin');
@@ -178,6 +189,11 @@ class AdminController extends Controller
      */
     public function resetPassword(Request $request, User $admin)
     {
+        // Ensure only super admins can access admin management
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super admin privileges required.');
+        }
+
         // Ensure target user is an admin
         if (!$admin->isAdmin()) {
             abort(404, 'User is not an admin');

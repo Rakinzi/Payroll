@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -65,17 +64,20 @@ class PermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::on('tenant')->firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web'
+            ]);
         }
 
         // Create roles and assign permissions
 
         // Super Admin - has all permissions
-        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
-        $superAdmin->syncPermissions(Permission::all());
+        $superAdmin = Role::on('tenant')->firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $superAdmin->syncPermissions(Permission::on('tenant')->get());
 
         // Admin - has most permissions except system-wide ones
-        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin = Role::on('tenant')->firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->syncPermissions([
             'view employees',
             'create employees',
@@ -100,7 +102,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         // Payroll Manager - payroll focused
-        $payrollManager = Role::firstOrCreate(['name' => 'payroll-manager']);
+        $payrollManager = Role::on('tenant')->firstOrCreate(['name' => 'payroll-manager', 'guard_name' => 'web']);
         $payrollManager->syncPermissions([
             'view employees',
             'view payroll',
@@ -113,7 +115,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         // HR Manager - employee and leave focused
-        $hrManager = Role::firstOrCreate(['name' => 'hr-manager']);
+        $hrManager = Role::on('tenant')->firstOrCreate(['name' => 'hr-manager', 'guard_name' => 'web']);
         $hrManager->syncPermissions([
             'view employees',
             'create employees',
@@ -127,7 +129,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         // Employee - limited self-service permissions
-        $employee = Role::firstOrCreate(['name' => 'employee']);
+        $employee = Role::on('tenant')->firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
         $employee->syncPermissions([
             'view employees', // Limited to own data via policy
             'create leaves',   // For own leave requests

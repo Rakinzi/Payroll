@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('payslip_id')->references('id')->on('payslips')->onDelete('cascade');
             $table->foreign('transaction_code_id')->references('id')->on('transaction_codes')->onDelete('set null');

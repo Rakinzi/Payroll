@@ -102,8 +102,11 @@ class LeaveBalance extends Model
     /**
      * Scope a query to only include balances for a specific payroll.
      */
-    public function scopeForPayroll($query, string $payrollId)
+    public function scopeForPayroll($query, ?string $payrollId)
     {
+        if ($payrollId === null) {
+            return $query->whereRaw('1 = 0'); // Return empty result
+        }
         return $query->where('payroll_id', $payrollId);
     }
 

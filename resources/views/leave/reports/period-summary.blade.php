@@ -79,7 +79,7 @@
                     $deptTotalTaken += $balance->days_taken;
                 @endphp
                 <tr>
-                    <td>{{ $balance->employee->employee_code ?? 'N/A' }}</td>
+                    <td>{{ $balance->employee->emp_system_id ?? 'N/A' }}</td>
                     <td>{{ strtoupper($balance->employee->surname ?? '') }}, {{ substr($balance->employee->firstname ?? '', 0, 1) }}</td>
                     <td class="amount">{{ number_format($balance->balance_bf, 2) }}</td>
                     <td class="amount">{{ number_format($balance->days_accrued, 3) }}</td>

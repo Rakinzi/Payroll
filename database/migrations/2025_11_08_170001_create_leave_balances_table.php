@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('days_taken', 10, 3)->default(0);
             $table->decimal('days_adjusted', 10, 3)->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             // Indexes
             $table->index('employee_id');

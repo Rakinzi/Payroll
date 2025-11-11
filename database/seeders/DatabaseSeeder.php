@@ -64,17 +64,8 @@ class DatabaseSeeder extends Seeder
         // Seed cost centers
         $this->call(CostCenterSeeder::class);
 
-        // Create default test user for each tenant
-        User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'center_id' => null, // Super admin
-                'is_active' => true,
-            ]
-        );
+        // Seed test users with roles
+        $this->call(TestUserSeeder::class);
 
         $this->command->info('Tenant database seeded!');
     }

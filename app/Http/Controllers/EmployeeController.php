@@ -137,7 +137,7 @@ class EmployeeController extends Controller
             'vehicle_engine_capacity' => 'nullable|integer|min:0',
 
             // Currency Splitting
-            'zwl_percentage' => 'nullable|numeric|min:0|max:100',
+            'zwg_percentage' => 'nullable|numeric|min:0|max:100',
             'usd_percentage' => 'nullable|numeric|min:0|max:100',
 
             // NEC Integration
@@ -252,7 +252,7 @@ class EmployeeController extends Controller
             'vehicle_engine_capacity' => 'nullable|integer|min:0',
 
             // Currency Splitting
-            'zwl_percentage' => 'nullable|numeric|min:0|max:100',
+            'zwg_percentage' => 'nullable|numeric|min:0|max:100',
             'usd_percentage' => 'nullable|numeric|min:0|max:100',
 
             // NEC Integration

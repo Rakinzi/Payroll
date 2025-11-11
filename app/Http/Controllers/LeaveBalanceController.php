@@ -30,7 +30,7 @@ class LeaveBalanceController extends Controller
         return Inertia::render('leave/balances/index', [
             'leaveBalances' => $leaveBalances,
             'payrolls' => Payroll::where('is_active', true)->select('id', 'payroll_name')->get(),
-            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'employee_code')->get(),
+            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'emp_system_id')->get(),
             'filters' => $request->only(['payroll_id', 'period', 'year', 'employee_id']),
         ]);
     }

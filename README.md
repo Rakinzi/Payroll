@@ -63,19 +63,18 @@ sudo mysql -u root -e "CREATE DATABASE IF NOT EXISTS lorimak_central CHARACTER S
 # DB_USERNAME=root
 # DB_PASSWORD=
 
-# 7. Run central database migrations
-php artisan migrate --database=central
+# 7. Run central database migrations and seed tenants
+php artisan migrate:fresh --database=central
+php artisan db:seed --database=central --class=TenantSeeder
 
-# 8. Create your first tenant
-php artisan tenant:create test localhost --migrate --name="Test Company"
+# 8. Migrate and seed a tenant (e.g., 'local', 'test', 'nhaka', or 'clary')
+php artisan tenant:migrate local --fresh
+php artisan tenant:seed local
 
-# 9. Seed test users and companies
-php artisan tenant:seed test --class=TestUserSeeder
-
-# 10. Start the development environment (runs Laravel server, queue, logs, and Vite)
+# 9. Start the development environment (runs Laravel server, queue, logs, and Vite)
 composer run dev
 
-# 11. Access at http://localhost:8000/login
+# 10. Access at http://localhost:8000/login
 ```
 
 **Login Credentials:**
@@ -122,53 +121,89 @@ Each tenant:
 - **Super Admin** (`center_id = null`): Can access all cost centers/companies
 - **Company User** (`center_id = <uuid>`): Restricted to specific cost center/company
 
+## Roles & Permissions
+
+The system uses Spatie Laravel Permission for role-based access control. Roles and permissions are **tenant-specific** and must be seeded correctly:
+
+### Available Roles:
+1. **super-admin** - Full access to all features and all cost centers (28 permissions)
+2. **admin** - Access to most features within their cost center (20 permissions)
+3. **payroll-manager** - Payroll processing focused (8 permissions)
+4. **hr-manager** - HR and leave management focused (9 permissions)
+5. **employee** - Limited self-service access (3 permissions)
+
+### Key Permissions:
+- `access all centers` - Required to access all cost centers (super-admin only)
+- `view employees`, `create employees`, `edit employees`, `delete employees`
+- `view payroll`, `create payroll`, `process payroll`, `approve payroll`
+- `view leaves`, `create leaves`, `approve leaves`
+- `view reports`, `export reports`
+
+### Seeding Order:
+**IMPORTANT:** The seeding order matters for multi-tenancy:
+
+1. **Central Database**: `TenantSeeder` creates tenant records
+2. **Tenant Database**:
+   - `PermissionSeeder` creates roles and permissions (must run first)
+   - `CostCenterSeeder` creates cost centers/companies
+   - `TestUserSeeder` creates users and assigns roles (must run after PermissionSeeder)
+
+The `DatabaseSeeder` handles this order automatically when you run `php artisan tenant:seed <tenant_id>`.
+
 ## Key Commands
 
 ### Tenant Management
 
-```bash
-# Create new tenant
-php artisan tenant:create <id> <domain> --name="Company Name" --migrate
+**Available Tenants** (defined in TenantSeeder):
+- `test` - Database: `lorimakp_test` (Test Tenant)
+- `local` - Database: `lorimakp_lorimak_v1` (Lorimak)
+- `nhaka` - Database: `lorimakp_nhaka` (Lorimak)
+- `clary` - Database: `lorimakp_clary` (Clary Sage Travel)
 
+```bash
 # List all tenants
 php artisan tenant:list
 
 # Run migrations for tenant
 php artisan tenant:migrate <tenant_id>
 
-# Seed tenant database (with specific seeder)
-php artisan tenant:seed <tenant_id> --class=TestUserSeeder
+# Seed tenant database (runs PermissionSeeder, CostCenterSeeder, TestUserSeeder)
+php artisan tenant:seed <tenant_id>
+
+# Seed with specific seeder
+php artisan tenant:seed <tenant_id> --class=PermissionSeeder
 
 # Run command in tenant context
 php artisan tenant:run <tenant_id> <command> --option=key=value
-
-# Delete tenant
-php artisan tenant:delete <tenant_id>
 
 # Fresh migrate tenant (drop all tables and re-migrate)
 php artisan tenant:migrate <tenant_id> --fresh
 
 # Reseed tenant (fresh migrate + seed)
-php artisan tenant:migrate <tenant_id> --fresh && php artisan tenant:seed <tenant_id> --class=TestUserSeeder
+php artisan tenant:migrate <tenant_id> --fresh && php artisan tenant:seed <tenant_id>
 ```
+
+**Important:** When seeding, roles and permissions must be created first (PermissionSeeder) before creating users (TestUserSeeder). The DatabaseSeeder runs them in the correct order automatically.
 
 ### Database Reset/Reseed
 
 ```bash
 # Reseed tenant only (keeps central database)
-php artisan tenant:migrate test --fresh && php artisan tenant:seed test --class=TestUserSeeder
+php artisan tenant:migrate local --fresh && php artisan tenant:seed local
 
-# Reseed everything (central + tenant)
+# Reseed everything (central + all tenants)
 php artisan migrate:fresh --database=central && \
-php artisan tenant:create test localhost --migrate --name="Test Company" && \
-php artisan tenant:seed test --class=TestUserSeeder
+php artisan db:seed --database=central --class=TenantSeeder && \
+php artisan tenant:migrate local --fresh && \
+php artisan tenant:seed local
 
 # Complete fresh setup from MySQL (nuclear option)
 sudo mysql -u root -e "DROP DATABASE IF EXISTS lorimak_central;" && \
 sudo mysql -u root -e "CREATE DATABASE lorimak_central CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" && \
-php artisan migrate --database=central && \
-php artisan tenant:create test localhost --migrate --name="Test Company" && \
-php artisan tenant:seed test --class=TestUserSeeder
+php artisan migrate:fresh --database=central && \
+php artisan db:seed --database=central --class=TenantSeeder && \
+php artisan tenant:migrate local --fresh && \
+php artisan tenant:seed local
 ```
 
 ### Development

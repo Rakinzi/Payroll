@@ -34,7 +34,7 @@ class LeaveApplicationController extends Controller
 
         return Inertia::render('leave/applications/index', [
             'leaveApplications' => $leaveApplications,
-            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'employee_code')->get(),
+            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'emp_system_id')->get(),
             'leaveTypes' => LeaveApplication::getSupportedLeaveTypes(),
             'filters' => $request->only(['employee_id', 'leave_type', 'status', 'date_from', 'date_to']),
         ]);
@@ -43,7 +43,7 @@ class LeaveApplicationController extends Controller
     public function create()
     {
         return Inertia::render('leave/applications/create', [
-            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'employee_code')->get(),
+            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'emp_system_id')->get(),
             'leaveTypes' => LeaveApplication::getSupportedLeaveTypes(),
             'leaveSources' => LeaveApplication::getSupportedLeaveSources(),
         ]);
@@ -77,7 +77,7 @@ class LeaveApplicationController extends Controller
     {
         return Inertia::render('leave/applications/edit', [
             'leave' => $leave,
-            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'employee_code')->get(),
+            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'emp_system_id')->get(),
             'leaveTypes' => LeaveApplication::getSupportedLeaveTypes(),
             'leaveSources' => LeaveApplication::getSupportedLeaveSources(),
         ]);

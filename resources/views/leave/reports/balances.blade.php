@@ -76,7 +76,7 @@
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $balance->employee->employee_code ?? 'N/A' }}</td>
+                    <td>{{ $balance->employee->emp_system_id ?? 'N/A' }}</td>
                     <td>{{ $balance->employee->full_name ?? 'Unknown' }}</td>
                     <td>{{ $balance->employee->department->dept_name ?? 'N/A' }}</td>
                     <td class="amount">{{ number_format($balance->employee->leave_entitlement ?? 0, 2) }}</td>

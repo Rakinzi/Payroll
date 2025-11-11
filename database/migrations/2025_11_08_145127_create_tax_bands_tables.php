@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Annual ZWG Tax Bands
-        Schema::create('tax_bands_annual_zwl', function (Blueprint $table) {
+        Schema::create('tax_bands_annual_zwg', function (Blueprint $table) {
             $table->id();
             $table->decimal('min_salary', 15, 2);
             $table->decimal('max_salary', 15, 2)->nullable();
@@ -32,7 +32,7 @@ return new class extends Migration
         });
 
         // Monthly ZWG Tax Bands
-        Schema::create('tax_bands_monthly_zwl', function (Blueprint $table) {
+        Schema::create('tax_bands_monthly_zwg', function (Blueprint $table) {
             $table->id();
             $table->decimal('min_salary', 15, 2);
             $table->decimal('max_salary', 15, 2)->nullable();
@@ -57,9 +57,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tax_bands_annual_zwl');
+        Schema::dropIfExists('tax_bands_annual_zwg');
         Schema::dropIfExists('tax_bands_annual_usd');
-        Schema::dropIfExists('tax_bands_monthly_zwl');
+        Schema::dropIfExists('tax_bands_monthly_zwg');
         Schema::dropIfExists('tax_bands_monthly_usd');
     }
 };

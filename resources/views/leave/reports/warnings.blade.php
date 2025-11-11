@@ -70,7 +70,7 @@
                 @endphp
                 <tr class="warning-{{ $severity }}">
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $balance->employee->employee_code ?? 'N/A' }}</td>
+                    <td>{{ $balance->employee->emp_system_id ?? 'N/A' }}</td>
                     <td>{{ strtoupper($balance->employee->surname ?? '') }}, {{ $balance->employee->firstname ?? '' }}</td>
                     <td>{{ $balance->employee->department->dept_name ?? 'N/A' }}</td>
                     <td class="amount">{{ number_format($balance->balance_cf, 2) }}</td>

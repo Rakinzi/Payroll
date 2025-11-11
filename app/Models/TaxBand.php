@@ -36,9 +36,9 @@ class TaxBand extends Model
      * Band type mappings
      */
     const BAND_TYPES = [
-        'annual_zwl' => 'tax_bands_annual_zwl',
+        'annual_zwg' => 'tax_bands_annual_zwg',
         'annual_usd' => 'tax_bands_annual_usd',
-        'monthly_zwl' => 'tax_bands_monthly_zwl',
+        'monthly_zwg' => 'tax_bands_monthly_zwg',
         'monthly_usd' => 'tax_bands_monthly_usd',
     ];
 
@@ -72,9 +72,9 @@ class TaxBand extends Model
     /**
      * Scope query to annual ZWG table.
      */
-    public function scopeAnnualZwl($query)
+    public function scopeAnnualZwg($query)
     {
-        return $query->from('tax_bands_annual_zwl');
+        return $query->from('tax_bands_annual_zwg');
     }
 
     /**
@@ -88,9 +88,9 @@ class TaxBand extends Model
     /**
      * Scope query to monthly ZWG table.
      */
-    public function scopeMonthlyZwl($query)
+    public function scopeMonthlyZwg($query)
     {
-        return $query->from('tax_bands_monthly_zwl');
+        return $query->from('tax_bands_monthly_zwg');
     }
 
     /**

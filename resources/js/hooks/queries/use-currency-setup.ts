@@ -4,12 +4,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 export interface CurrencySplit {
     id: string;
     center_id: string;
-    zwl_percentage: number;
+    zwg_percentage: number;
     usd_percentage: number;
     effective_date: string;
     is_active: boolean;
     notes: string | null;
-    formatted_zwl_percentage: string;
+    formatted_zwg_percentage: string;
     formatted_usd_percentage: string;
     created_at: string;
     updated_at: string;
@@ -22,7 +22,7 @@ export interface CurrencySplit {
 
 export interface CurrencySplitData {
     center_id: string;
-    zwl_percentage: number;
+    zwg_percentage: number;
     usd_percentage: number;
     effective_date: string;
     is_active: boolean;

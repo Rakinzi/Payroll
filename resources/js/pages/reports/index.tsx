@@ -63,7 +63,7 @@ interface ReportsIndexPageProps {
 }
 
 export default function ReportsIndex() {
-    const { payrolls, recentReports, scheduledReports, reportTypes } = usePage<ReportsIndexPageProps>().props;
+    const { payrolls = [], recentReports = [], scheduledReports = [], reportTypes = {} } = usePage<ReportsIndexPageProps>().props;
     const [activeTab, setActiveTab] = useState('overview');
 
     const generateCostAnalysisMutation = useGenerateCostAnalysis();

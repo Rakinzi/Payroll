@@ -18,7 +18,7 @@ class LeaveReportController extends Controller
         return Inertia::render('leave/reports/index', [
             'payrolls' => Payroll::where('is_active', true)->select('id', 'payroll_name')->get(),
             'departments' => Department::orderBy('dept_name')->select('id', 'dept_name')->get(),
-            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'employee_code')->get(),
+            'employees' => Employee::active()->select('id', 'firstname', 'surname', 'emp_system_id')->get(),
         ]);
     }
 
@@ -110,6 +110,6 @@ class LeaveReportController extends Controller
             'year' => $request->year,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download("leave_annual_statement_{$employee->employee_code}_{$request->year}.pdf");
+        return $pdf->download("leave_annual_statement_{$employee->emp_system_id}_{$request->year}.pdf");
     }
 }

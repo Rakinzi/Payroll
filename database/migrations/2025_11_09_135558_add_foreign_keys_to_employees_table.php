@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('employees', function (Blueprint $table) {
             // Add foreign key constraints after dependent tables exist
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('set null');
-            $table->foreign('position_id')->references('id')->on('positions')->onDelete('set null');
+            $table->foreign('position_id')->references('id')->on('work_position')->onDelete('set null');
             $table->foreign('occupation_id')->references('id')->on('occupations')->onDelete('set null');
             $table->foreign('paypoint_id')->references('id')->on('paypoints')->onDelete('set null');
             $table->foreign('nec_grade_id')->references('id')->on('nec_grades')->onDelete('set null');

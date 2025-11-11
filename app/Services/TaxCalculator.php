@@ -187,9 +187,9 @@ class TaxCalculator
         // Map band type to scope method
         $scopeMethod = match($bandType) {
             'monthly_usd' => 'monthlyUsd',
-            'monthly_zwg' => 'monthlyZwl',
+            'monthly_zwg' => 'monthlyZwg',
             'annual_usd' => 'annualUsd',
-            'annual_zwg' => 'annualZwl',
+            'annual_zwg' => 'annualZwg',
             default => 'monthlyUsd',
         };
 

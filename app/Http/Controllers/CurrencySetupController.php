@@ -65,15 +65,17 @@ class CurrencySetupController extends Controller
     {
         $centerId = auth()->user()->center_id;
 
-        $validated = $request->validate(array_merge(
-            CurrencySplit::rules(),
-            [
-                'center_id' => 'required|uuid|in:' . $centerId, // Must match user's center
-            ]
-        ));
+        $rules = CurrencySplit::rules();
+
+        // For non-super admins, restrict to their center
+        if ($centerId !== null) {
+            $rules['center_id'] = 'required|uuid|in:' . $centerId;
+        }
+
+        $validated = $request->validate($rules);
 
         // Validate percentages total 100
-        if (abs(($validated['zwl_percentage'] + $validated['usd_percentage']) - 100) >= 0.01) {
+        if (abs(($validated['zwg_percentage'] + $validated['usd_percentage']) - 100) >= 0.01) {
             return redirect()->back()
                 ->with('error', 'Currency split percentages must total 100%');
         }
@@ -91,20 +93,22 @@ class CurrencySetupController extends Controller
     {
         $centerId = auth()->user()->center_id;
 
-        // Ensure the split belongs to the user's cost center
-        if ($currencySplit->center_id !== $centerId) {
+        // Ensure the split belongs to the user's cost center (if not super admin)
+        if ($centerId !== null && $currencySplit->center_id !== $centerId) {
             abort(403, 'Unauthorized access to this currency split');
         }
 
-        $validated = $request->validate(array_merge(
-            CurrencySplit::rules(true),
-            [
-                'center_id' => 'required|uuid|in:' . $centerId,
-            ]
-        ));
+        $rules = CurrencySplit::rules(true);
+
+        // For non-super admins, restrict to their center
+        if ($centerId !== null) {
+            $rules['center_id'] = 'required|uuid|in:' . $centerId;
+        }
+
+        $validated = $request->validate($rules);
 
         // Validate percentages total 100
-        if (abs(($validated['zwl_percentage'] + $validated['usd_percentage']) - 100) >= 0.01) {
+        if (abs(($validated['zwg_percentage'] + $validated['usd_percentage']) - 100) >= 0.01) {
             return redirect()->back()
                 ->with('error', 'Currency split percentages must total 100%');
         }
@@ -122,8 +126,8 @@ class CurrencySetupController extends Controller
     {
         $centerId = auth()->user()->center_id;
 
-        // Ensure the split belongs to the user's cost center
-        if ($currencySplit->center_id !== $centerId) {
+        // Ensure the split belongs to the user's cost center (if not super admin)
+        if ($centerId !== null && $currencySplit->center_id !== $centerId) {
             abort(403, 'Unauthorized access to this currency split');
         }
 

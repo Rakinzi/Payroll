@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('currency_splits', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('center_id');
-            $table->decimal('zwl_percentage', 5, 2)->default(0);
+            $table->decimal('zwg_percentage', 5, 2)->default(0);
             $table->decimal('usd_percentage', 5, 2)->default(100);
             $table->date('effective_date');
             $table->boolean('is_active')->default(true);

@@ -11,12 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('work_position', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('position_name')->unique();
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        Schema::table('custom_transactions_tbl', function (Blueprint $table) {
             $table->softDeletes();
         });
     }
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('work_position');
+        Schema::table('custom_transactions_tbl', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

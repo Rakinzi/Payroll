@@ -38,7 +38,7 @@
         <div class="employee-box">
             <div class="employee-row">
                 <span class="label">Employee Code:</span>
-                <span>{{ $employee->employee_code ?? 'N/A' }}</span>
+                <span>{{ $employee->emp_system_id ?? 'N/A' }}</span>
             </div>
             <div class="employee-row">
                 <span class="label">Employee Name:</span>

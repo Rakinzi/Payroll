@@ -51,6 +51,10 @@ class TestUserSeeder extends Seeder
             ]
         );
 
+        // Assign super-admin role
+        $role = \Spatie\Permission\Models\Role::on('tenant')->where('name', 'super-admin')->first();
+        $superAdmin->assignRole($role);
+
         $this->command->info("Super Admin created: {$superAdmin->email} (Access: ALL COMPANIES)");
 
         // Create regular user for Test Company Ltd
@@ -65,6 +69,10 @@ class TestUserSeeder extends Seeder
             ]
         );
 
+        // Assign admin role to user1
+        $role = \Spatie\Permission\Models\Role::on('tenant')->where('name', 'admin')->first();
+        $user1->assignRole($role);
+
         $this->command->info("User 1 created: {$user1->email} (Company: {$center1->center_name})");
 
         // Create regular user for Demo Corporation
@@ -78,6 +86,10 @@ class TestUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Assign hr-manager role to user2
+        $role = \Spatie\Permission\Models\Role::on('tenant')->where('name', 'hr-manager')->first();
+        $user2->assignRole($role);
 
         $this->command->info("User 2 created: {$user2->email} (Company: {$center2->center_name})");
 

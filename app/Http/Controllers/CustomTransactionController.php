@@ -45,11 +45,16 @@ class CustomTransactionController extends Controller
             ? AccountingPeriod::forPayroll($payrollId)->orderBy('period_start', 'desc')->get()
             : collect([]);
 
-        $employees = Employee::where('center_id', Auth::user()->center_id)
-            ->where('is_active', true)
+        $employeesQuery = Employee::where('is_active', true)
             ->where('is_ex', false)
-            ->orderBy('firstname')
-            ->get();
+            ->orderBy('firstname');
+
+        // Filter by center if user is not super admin
+        if (Auth::user()->center_id !== null) {
+            $employeesQuery->where('center_id', Auth::user()->center_id);
+        }
+
+        $employees = $employeesQuery->get();
 
         $transactionCodes = TransactionCode::orderBy('code_number')->get();
 
@@ -236,7 +241,7 @@ class CustomTransactionController extends Controller
             'work_ratio' => round($workRatio * 100, 2),
             'capped_ratio' => round($cappedRatio * 100, 2),
             'estimated_amount_usd' => null,
-            'estimated_amount_zwl' => null,
+            'estimated_amount_zwg' => null,
         ];
 
         if ($request->employee_id) {
@@ -244,7 +249,7 @@ class CustomTransactionController extends Controller
             if ($employee) {
                 if ($request->use_basic) {
                     $estimate['estimated_amount_usd'] = round($cappedRatio * $employee->basic_salary_usd, 2);
-                    $estimate['estimated_amount_zwl'] = round($cappedRatio * $employee->basic_salary, 2);
+                    $estimate['estimated_amount_zwg'] = round($cappedRatio * $employee->basic_salary, 2);
                 } else {
                     $baseAmount = $request->base_amount ?? 0;
                     $estimate['estimated_amount_usd'] = round($cappedRatio * $baseAmount, 2);

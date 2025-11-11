@@ -10,16 +10,16 @@ use Inertia\Inertia;
 class TaxBandController extends Controller
 {
     private $bandTypes = [
-        'annual_zwl' => 'tax_bands_annual_zwl',
+        'annual_zwg' => 'tax_bands_annual_zwg',
         'annual_usd' => 'tax_bands_annual_usd',
-        'monthly_zwl' => 'tax_bands_monthly_zwl',
+        'monthly_zwg' => 'tax_bands_monthly_zwg',
         'monthly_usd' => 'tax_bands_monthly_usd',
     ];
 
     private $bandTypeLabels = [
-        'annual_zwl' => 'ZWG - Annual Table',
+        'annual_zwg' => 'ZWG - Annual Table',
         'annual_usd' => 'USD - Annual Table',
-        'monthly_zwl' => 'ZWG - Monthly Table',
+        'monthly_zwg' => 'ZWG - Monthly Table',
         'monthly_usd' => 'USD - Monthly Table',
     ];
 

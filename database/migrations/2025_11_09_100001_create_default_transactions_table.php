@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('hours_worked', 8, 2)->default(0);
             $table->enum('transaction_currency', ['ZWG', 'USD']);
             $table->timestamps();
+            $table->softDeletes();
 
             // Foreign keys
             $table->foreign('code_id')

@@ -35,6 +35,7 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->uuid('approved_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             // Indexes
             $table->index('employee_id');

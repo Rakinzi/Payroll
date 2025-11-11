@@ -13,7 +13,7 @@ class CurrencySplit extends Model
 
     protected $fillable = [
         'center_id',
-        'zwl_percentage',
+        'zwg_percentage',
         'usd_percentage',
         'effective_date',
         'is_active',
@@ -21,7 +21,7 @@ class CurrencySplit extends Model
     ];
 
     protected $casts = [
-        'zwl_percentage' => 'decimal:2',
+        'zwg_percentage' => 'decimal:2',
         'usd_percentage' => 'decimal:2',
         'effective_date' => 'date',
         'is_active' => 'boolean',
@@ -45,7 +45,7 @@ class CurrencySplit extends Model
     {
         return [
             'center_id' => 'required|uuid|exists:cost_centers,id',
-            'zwl_percentage' => 'required|numeric|min:0|max:100',
+            'zwg_percentage' => 'required|numeric|min:0|max:100',
             'usd_percentage' => 'required|numeric|min:0|max:100',
             'effective_date' => 'required|date',
             'is_active' => 'boolean',
@@ -56,8 +56,12 @@ class CurrencySplit extends Model
     /**
      * Scope query to a specific cost center.
      */
-    public function scopeForCenter($query, string $centerId)
+    public function scopeForCenter($query, ?string $centerId)
     {
+        if ($centerId === null) {
+            // Super admin - return all centers
+            return $query;
+        }
         return $query->where('center_id', $centerId);
     }
 
@@ -81,8 +85,12 @@ class CurrencySplit extends Model
     /**
      * Get the current effective currency split for a cost center.
      */
-    public static function getCurrentSplit(string $centerId): ?self
+    public static function getCurrentSplit(?string $centerId): ?self
     {
+        if ($centerId === null) {
+            return null; // Super admin has no specific center split
+        }
+
         return self::forCenter($centerId)
                    ->active()
                    ->effectiveOn(now()->toDateString())
@@ -94,7 +102,7 @@ class CurrencySplit extends Model
      */
     public function validatePercentages(): bool
     {
-        $total = $this->zwl_percentage + $this->usd_percentage;
+        $total = $this->zwg_percentage + $this->usd_percentage;
         return abs($total - 100) < 0.01; // Allow for small floating point differences
     }
 
@@ -115,9 +123,9 @@ class CurrencySplit extends Model
     /**
      * Get formatted percentage strings.
      */
-    public function getFormattedZwlPercentageAttribute(): string
+    public function getFormattedZwgPercentageAttribute(): string
     {
-        return number_format($this->zwl_percentage, 2) . '%';
+        return number_format($this->zwg_percentage, 2) . '%';
     }
 
     public function getFormattedUsdPercentageAttribute(): string
